@@ -1,26 +1,27 @@
 package com.aspiring_creators.aichopaicho.data.repository
 
-import com.aspiring_creators.aichopaicho.data.database.RecordDatabase
+import com.aspiring_creators.aichopaicho.data.dao.RecordDao
 import com.aspiring_creators.aichopaicho.data.entity.Record
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class RecordRepository(private val db: RecordDatabase) {
-
-    private val dao = db.dao
+@Singleton
+class RecordRepository @Inject constructor(private val recordDao: RecordDao) {
 
     fun getAllRecords(): Flow<List<Record>> {
-        return dao.getAllRecords()
+        return recordDao.getAllRecords()
     }
 
     suspend fun upsert(record: Record) {
-        dao.upsert(record)
+        recordDao.upsert(record)
     }
 
     suspend fun softDelete(id: String, updatedAt: Long) {
-        dao.softDelete(id, updatedAt)
+        recordDao.softDelete(id, updatedAt)
     }
 
     suspend fun getTotalByType(typeId: Int): Int {
-        return dao.getTotalByType(typeId)
+        return recordDao.getTotalByType(typeId)
     }
 }

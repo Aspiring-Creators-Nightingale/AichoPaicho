@@ -1,21 +1,22 @@
 package com.aspiring_creators.aichopaicho.data.repository
 
-import com.aspiring_creators.aichopaicho.data.database.TypeDatabase
+import com.aspiring_creators.aichopaicho.data.dao.TypeDao
 import com.aspiring_creators.aichopaicho.data.entity.Type
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class TypeRepository(private val db: TypeDatabase) {
-
-    private val dao = db.dao
+@Singleton
+class TypeRepository @Inject constructor(private val typeDao: TypeDao) {
 
     suspend fun upsert(type: Type) {
-        dao.upsert(type)
+        typeDao.upsert(type)
     }
 
     suspend fun softDelete(id: String, updatedAt: Long) {
-        dao.softDelete(id, updatedAt)
+        typeDao.softDelete(id, updatedAt)
     }
 
     suspend fun getAllTypes(): List<Type> {
-        return dao.getAllTypes()
+        return typeDao.getAllTypes()
     }
 }
