@@ -17,6 +17,6 @@ interface UserDao {
     suspend fun softDelete(id: String, updatedAt: Long)
 
     @Query("SELECT * FROM users WHERE isDeleted = 0")
-    suspend fun getUser(id: String )
+    suspend fun getUser(id: String ): User?
 
 }
