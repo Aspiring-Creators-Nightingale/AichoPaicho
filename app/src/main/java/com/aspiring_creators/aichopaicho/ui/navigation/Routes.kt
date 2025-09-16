@@ -1,4 +1,4 @@
-package com.aspiring_creators.aichopaicho.ui.screens
+package com.aspiring_creators.aichopaicho.ui.navigation
 
 object Routes {
 

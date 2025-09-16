@@ -1,10 +1,12 @@
 package com.aspiring_creators.aichopaicho.data.dao
 
+import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Upsert
 import com.aspiring_creators.aichopaicho.data.entity.Contact
 import kotlinx.coroutines.flow.Flow
 
+@Dao
 interface ContactDao {
 
     @Upsert
@@ -14,7 +16,7 @@ interface ContactDao {
     suspend fun softDelete(id: String, updatedAt: Long)
 
     @Query("SELECT * FROM contacts WHERE isDeleted = 0")
-    suspend fun getAllContacts(): Flow<List<Contact>>
+     fun getAllContacts(): Flow<List<Contact>>
 
 
 }

@@ -1,4 +1,4 @@
-package com.aspiring_creators.aichopaicho.ui.screens
+package com.aspiring_creators.aichopaicho.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
@@ -11,6 +11,7 @@ fun AppNavigationGraph()
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = Routes.WELCOME_SCREEN){
+
         composable(Routes.WELCOME_SCREEN) {
 
         }

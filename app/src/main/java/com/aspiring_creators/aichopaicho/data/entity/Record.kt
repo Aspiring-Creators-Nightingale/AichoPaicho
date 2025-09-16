@@ -2,6 +2,7 @@ package com.aspiring_creators.aichopaicho.data.entity
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
@@ -10,7 +11,8 @@ import androidx.room.PrimaryKey
         ForeignKey(entity = User::class, parentColumns = ["id"], childColumns = ["userId"]),
         ForeignKey(entity = Contact::class, parentColumns = ["id"], childColumns = ["contactId"]),
         ForeignKey(entity = Type::class, parentColumns = ["id"], childColumns = ["typeId"])
-    ]
+    ],
+    indices = [Index(value = ["userId"]), Index(value = ["contactId"]), Index(value = ["typeId"])]
 )
 data class Record(
     @PrimaryKey val id: String,  // UUID

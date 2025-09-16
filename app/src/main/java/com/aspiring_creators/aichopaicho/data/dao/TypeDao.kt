@@ -1,9 +1,11 @@
 package com.aspiring_creators.aichopaicho.data.dao
 
+import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Upsert
 import com.aspiring_creators.aichopaicho.data.entity.Type
 
+@Dao
 interface TypeDao {
 
     @Upsert
