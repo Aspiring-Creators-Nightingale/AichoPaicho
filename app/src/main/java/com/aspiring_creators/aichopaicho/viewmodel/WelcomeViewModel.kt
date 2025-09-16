@@ -1,5 +1,6 @@
 package com.aspiring_creators.aichopaicho.viewmodel
 
+import android.app.Activity
 import android.content.Context
 import android.credentials.GetCredentialException
 import androidx.compose.runtime.mutableStateOf
@@ -58,15 +59,21 @@ class WelcomeViewModel @Inject constructor(
         val user = firebaseUser?.toUserEntity()
         _uiState.value = _uiState.value.copy(user = user)
     }
+    fun handleSkipNow()
+    {
+        // TODO
+//        viewModelScope.launch {
+//        }
+    }
 
-    fun handleGoogleIdToken()
+    fun handleGoogleIdToken(activity: Activity, isReturningUser: Boolean = false)
     {
         viewModelScope.launch {
             setLoading(true)
             try
             {
                 val googleIdOption = GetGoogleIdOption.Builder()
-                    .setFilterByAuthorizedAccounts(false)
+                    .setFilterByAuthorizedAccounts(isReturningUser) // for user having an account
                     .setServerClientId(context.getString(R.string.web_client))
                     .build()
 
@@ -78,7 +85,7 @@ class WelcomeViewModel @Inject constructor(
 
                 val result = credentialManager.getCredential(
                     request = request,
-                    context = context
+                    context = activity
                 )
 
                 handleSignIn(result)
@@ -91,6 +98,7 @@ class WelcomeViewModel @Inject constructor(
 
             } catch (e: Exception) {
                 setErrorMessage(e.message ?: "Sign in failed")
+                e.printStackTrace()
             } finally {
                 setLoading(false)
     }
