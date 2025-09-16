@@ -53,7 +53,7 @@ fun WelcomeScreen()
 
             Spacer(modifier = Modifier.size(33.dp))
 
-            TextComponent(value = "Never forget a loan or a debt", textSize = 37.sp)
+            TextComponent(value = "Never forget a loan or a debt", textSize = 48.sp)
 
             Spacer(modifier = Modifier.size(33.dp))
 

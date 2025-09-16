@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -58,7 +59,7 @@ fun LogoTopBarPreview()
 }
 
 @Composable
-fun TextComponent(value: String, textSize: TextUnit = 12.sp) {
+fun TextComponent(value: String, textSize: TextUnit = 12.sp, textColor: Int = R.color.textColor) {
 
 
     val crimsonTextFamily = FontFamily(
@@ -71,16 +72,17 @@ fun TextComponent(value: String, textSize: TextUnit = 12.sp) {
         text = value,
         modifier = Modifier.padding(10.dp),
         fontFamily = crimsonTextFamily,
-        color = Color.Black,
+        color = colorResource(textColor),
         fontSize = textSize,
         fontWeight = FontWeight.Normal,
+        textAlign = TextAlign.Center
     )
 }
 @Preview(showBackground = true)
 @Composable
 fun TextComponentPreview()
 {
-    TextComponent(value = "Welcome to Aicho Paicho", textSize = 27.sp)
+    TextComponent(value = "Welcome to Aicho Paicho ffdfgfddgdfgdfgdgdfgdfgdfgdfg dfgdfgd fg dgdfg dfdgd gdf fdgdfg dfg", textSize = 27.sp)
 }
 
 
@@ -98,7 +100,7 @@ fun ButtonComponent(
             .padding(vertical = 4.dp),
          colors = ButtonDefaults.buttonColors(
              containerColor = colorResource(R.color.buttonColor),
-             contentColor = colorResource(R.color.black)
+//             contentColor = colorResource(R.color.black)
          ),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp) // Control padding inside the button
     ) {
@@ -117,6 +119,7 @@ fun ButtonComponent(
             TextComponent(
                 value = text,
                 textSize = 20.sp,
+                textColor = R.color.black
             )
         }
     }
