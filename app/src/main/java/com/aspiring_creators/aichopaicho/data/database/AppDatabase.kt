@@ -2,6 +2,8 @@ package com.aspiring_creators.aichopaicho.data.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import com.aspiring_creators.aichopaicho.data.Converters
 import com.aspiring_creators.aichopaicho.data.dao.ContactDao
 import com.aspiring_creators.aichopaicho.data.dao.RecordDao
 import com.aspiring_creators.aichopaicho.data.dao.TypeDao
@@ -24,6 +26,7 @@ import com.aspiring_creators.aichopaicho.data.local.ScreenViewDao
     version = 1,
     exportSchema = false
 )
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun contactDao(): ContactDao

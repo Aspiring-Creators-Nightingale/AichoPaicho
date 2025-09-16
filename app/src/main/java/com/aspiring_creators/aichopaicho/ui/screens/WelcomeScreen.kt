@@ -1,42 +1,51 @@
 package com.aspiring_creators.aichopaicho.ui.screens
 
+import android.widget.Space
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.aspiring_creators.aichopaicho.R
 import com.aspiring_creators.aichopaicho.ui.component.ButtonComponent
 import com.aspiring_creators.aichopaicho.ui.component.LogoTopBar
 import com.aspiring_creators.aichopaicho.ui.component.TextComponent
+import com.aspiring_creators.aichopaicho.viewmodel.WelcomeViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.HiltAndroidApp
+import dagger.hilt.android.lifecycle.HiltViewModel
 
 
 @Composable
 fun WelcomeScreen()
 {
+    val viewModel: WelcomeViewModel = hiltViewModel()
+
+//    val scrollState = rememberScrollState()
     Surface(
         modifier = Modifier.fillMaxWidth(),
+//            .verticalScroll(scrollState),
         color = colorResource(R.color.appThemeColor)
     ) {
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
+
+            Spacer(modifier = Modifier.size(33.dp))
 
             LogoTopBar(logo = R.drawable.logo_aichopaicho, title = "AichoPaicho")
 
@@ -53,20 +62,22 @@ fun WelcomeScreen()
 
             Spacer(modifier = Modifier.size(33.dp))
 
-            TextComponent(value = "Never forget a loan or a debt", textSize = 48.sp)
+            TextComponent(value = "Never forget a loan or a debt", textSize = 33.sp, lineHeight = 33.sp)
 
             Spacer(modifier = Modifier.size(33.dp))
 
             ButtonComponent(
                 R.drawable.logo_google, "Sign in with Google",
-                onClick = {},
+                onClick = {
+
+                },
                 modifier = Modifier
             )
 
             ButtonComponent(
                 R.drawable.logo_skip, "Skip for Now",
                 onClick = {},
-                modifier = Modifier.padding(horizontal = 85.dp).width(200.dp)
+                modifier = Modifier.padding(horizontal = 75.dp).width(250.dp)
             )
         }
     }

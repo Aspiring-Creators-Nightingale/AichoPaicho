@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -28,8 +26,6 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aspiring_creators.aichopaicho.R
-import java.nio.file.WatchEvent
-import kotlin.math.log
 
 
 @Composable
@@ -47,7 +43,7 @@ fun LogoTopBar(logo: Int, title: String)
         )
         Spacer(modifier = Modifier.size(36.dp))
 
-       TextComponent("AichoPaicho", textSize = 35.sp)
+       TextComponent("AichoPaicho", textSize = 35.sp,)
 
     }
 }
@@ -59,7 +55,12 @@ fun LogoTopBarPreview()
 }
 
 @Composable
-fun TextComponent(value: String, textSize: TextUnit = 12.sp, textColor: Int = R.color.textColor) {
+fun TextComponent(
+    value: String,
+    textSize: TextUnit = 12.sp,
+    textColor: Int = R.color.textColor,
+    lineHeight: TextUnit = TextUnit.Unspecified
+) {
 
 
     val crimsonTextFamily = FontFamily(
@@ -75,14 +76,15 @@ fun TextComponent(value: String, textSize: TextUnit = 12.sp, textColor: Int = R.
         color = colorResource(textColor),
         fontSize = textSize,
         fontWeight = FontWeight.Normal,
-        textAlign = TextAlign.Center
+        textAlign = TextAlign.Center,
+        lineHeight = lineHeight
     )
 }
 @Preview(showBackground = true)
 @Composable
 fun TextComponentPreview()
 {
-    TextComponent(value = "Welcome to Aicho Paicho ffdfgfddgdfgdfgdgdfgdfgdfgdfg dfgdfgd fg dgdfg dfdgd gdf fdgdfg dfg", textSize = 27.sp)
+    TextComponent(value = "Welcome to Aicho Paicho dfg dfg", textSize = 27.sp,)
 }
 
 
@@ -119,7 +121,7 @@ fun ButtonComponent(
             TextComponent(
                 value = text,
                 textSize = 20.sp,
-                textColor = R.color.black
+                textColor = R.color.black,
             )
         }
     }
