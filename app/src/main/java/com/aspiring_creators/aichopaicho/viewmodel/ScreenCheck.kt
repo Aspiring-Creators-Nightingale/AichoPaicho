@@ -2,7 +2,7 @@ package com.aspiring_creators.aichopaicho.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aspiring_creators.aichopaicho.data.repository.ScreenViewRepository
+import com.aspiring_creators.aichopaicho.data.local.ScreenViewRepository
 import com.aspiring_creators.aichopaicho.ui.navigation.Routes
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,7 +32,7 @@ class ScreenCheck @Inject constructor(private val screenViewRepository: ScreenVi
             val newStatusMap = mutableMapOf<String, Boolean>()
             for (screenId in screenToCheck) {
                 val screenView = screenViewRepository.getScreenView(screenId)
-                newStatusMap[screenId] = screenView?.hasBeenShown ?: false
+                newStatusMap[screenId] = screenView == true
             }
             _screensShownStatus.value = newStatusMap // Update the StateFlow with the new map
             _isLoading.value = false

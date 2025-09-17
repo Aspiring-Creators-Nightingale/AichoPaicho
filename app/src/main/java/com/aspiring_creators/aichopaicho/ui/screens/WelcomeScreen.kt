@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -37,29 +38,23 @@ import com.aspiring_creators.aichopaicho.data.repository.UserRepository
 import com.aspiring_creators.aichopaicho.ui.component.ButtonComponent
 import com.aspiring_creators.aichopaicho.ui.component.LogoTopBar
 import com.aspiring_creators.aichopaicho.ui.component.TextComponent
+import com.aspiring_creators.aichopaicho.ui.navigation.Routes
 import com.aspiring_creators.aichopaicho.viewmodel.WelcomeViewModel
-import com.google.firebase.auth.FirebaseAuth
-import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.HiltAndroidApp
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
-
-
-
-fun Context.findActivity(): FragmentActivity? {
-    var context = this
-    while (context is ContextWrapper) {
-        if (context is FragmentActivity) return context
-        context = context.baseContext
-    }
-    return null
-}
 
 @Composable
 fun WelcomeScreen(
-     welcomeViewModel: WelcomeViewModel = hiltViewModel()
+     welcomeViewModel: WelcomeViewModel = hiltViewModel(),
+     ShowPermissionScreen:() -> Unit,
 )
 {
+
+    LaunchedEffect(Unit) {
+        welcomeViewModel.navigationEvent.collect { route ->
+            if (route == Routes.PERMISSION_CONTACTS_SCREEN) {
+                ShowPermissionScreen()
+            }
+        }
+    }
     val context = LocalContext.current
     val activity = context as ComponentActivity
 
@@ -97,9 +92,9 @@ fun WelcomeScreen(
             ButtonComponent(
                 R.drawable.logo_google, "Sign in with Google",
                 onClick = {
-                   welcomeViewModel.handleGoogleIdToken(activity)
+                    welcomeViewModel.onGoogleSignInClicked(activity)
                 },
-                modifier = Modifier
+                    modifier = Modifier
             )
 
             ButtonComponent(
@@ -118,5 +113,5 @@ fun WelcomeScreen(
 @Composable
 fun WelcomeScreenPreview()
 {
-    WelcomeScreen(hiltViewModel())
+//    WelcomeScreen(hiltViewModel())
 }

@@ -2,33 +2,33 @@ package com.aspiring_creators.aichopaicho.viewmodel
 
 import android.app.Activity
 import android.content.Context
-import android.credentials.GetCredentialException
-import androidx.compose.runtime.mutableStateOf
+import android.util.Log
+import androidx.compose.ui.input.key.type
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
-import androidx.credentials.exceptions.GetCredentialCancellationException
-import androidx.credentials.exceptions.GetCredentialInterruptedException
-import androidx.credentials.exceptions.NoCredentialException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aspiring_creators.aichopaicho.R
-import com.aspiring_creators.aichopaicho.data.dto.UserDto
 import com.aspiring_creators.aichopaicho.data.mapper.toUserEntity
-import com.aspiring_creators.aichopaicho.data.repository.ScreenViewRepository
+import com.aspiring_creators.aichopaicho.data.local.ScreenViewRepository
 import com.aspiring_creators.aichopaicho.data.repository.UserRepository
 import com.aspiring_creators.aichopaicho.ui.navigation.Routes
+import com.aspiring_creators.aichopaicho.viewmodel.data.WelcomeScreenUiEvent
 import com.aspiring_creators.aichopaicho.viewmodel.data.WelcomeScreenUiState
 import com.google.android.gms.tasks.Task
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -40,11 +40,16 @@ import kotlin.coroutines.resumeWithException
 class WelcomeViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val firebaseAuth: FirebaseAuth,
+    private val screenViewRepository: ScreenViewRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(WelcomeScreenUiState())
     val uiState: StateFlow<WelcomeScreenUiState> = _uiState.asStateFlow()
+
+    private val _navigationEvent = MutableSharedFlow<String>()
+    val navigationEvent = _navigationEvent.asSharedFlow()
+
 
     fun setLoading(value: Boolean)
     {
@@ -65,62 +70,142 @@ class WelcomeViewModel @Inject constructor(
 //        viewModelScope.launch {
 //        }
     }
+    init {
+        firebaseAuth.addAuthStateListener { authStateListener }
+    }
+
+
+    fun onGoogleSignInClicked(activity: Activity) {
+        handleGoogleIdToken(activity)
+        if (uiState.value.errorMessage == null) {
+            viewModelScope.launch {
+                _navigationEvent.emit(Routes.PERMISSION_CONTACTS_SCREEN)
+            }
+        }
+    }
+    private val authStateListener = FirebaseAuth.AuthStateListener { auth ->
+        viewModelScope.launch { // Launch in viewModelScope for coroutine operations
+            val firebaseUser = auth.currentUser
+            setUser(firebaseUser) // Update your UI state
+
+            if (firebaseUser != null) {
+
+                Log.d("AuthCheck", "AuthStateListener: User signed in - ${firebaseUser.uid}")
+
+                checkLocalUserConsistency(firebaseUser)
+            } else {
+                Log.d("AuthCheck", "AuthStateListener: User signed out")
+
+            }
+        }
+    }
+    private suspend fun checkLocalUserConsistency(currentFirebaseUser: FirebaseUser) {
+        val localUser = userRepository.getUser(currentFirebaseUser.uid)
+        if (localUser == null) {
+            Log.w("AuthCheck", "Firebase user ${currentFirebaseUser.uid} found, but no local data. Signing out.")
+//              firebaseAuth.signOut() TODO
+            setErrorMessage("Session data mismatch. Please sign in again.")
+        } else {
+            Log.d("AuthCheck", "Firebase user ${currentFirebaseUser.uid} and local user match.")
+
+            _navigationEvent.emit(Routes.PERMISSION_CONTACTS_SCREEN)
+
+        }
+    }
+
 
     fun handleGoogleIdToken(activity: Activity, isReturningUser: Boolean = false)
     {
         viewModelScope.launch {
             setLoading(true)
-            try
-            {
-                val googleIdOption = GetGoogleIdOption.Builder()
-                    .setFilterByAuthorizedAccounts(isReturningUser) // for user having an account
-                    .setServerClientId(context.getString(R.string.web_client))
-                    .build()
 
-                val request = GetCredentialRequest.Builder()
-                    .addCredentialOption(googleIdOption)
-                    .build()
+            if(firebaseAuth.currentUser == null) {
+                try {
 
-                val credentialManager = CredentialManager.create(context)
+                    val googleIdOption = GetGoogleIdOption.Builder()
+                        .setFilterByAuthorizedAccounts(isReturningUser) // for user having an account
+                        .setServerClientId(activity.getString(R.string.web_client))
+                        .build()
 
-                val result = credentialManager.getCredential(
-                    request = request,
-                    context = activity
-                )
+                    val request = GetCredentialRequest.Builder()
+                        .addCredentialOption(googleIdOption)
+                        .build()
 
-                handleSignIn(result)
+                    val credentialManager = CredentialManager.create(activity)
 
-                // insert into database
-                val user = uiState.value.user
-                user?.let {
-                    userRepository.upsert(user)
+                    val result = credentialManager.getCredential(
+                        request = request,
+                        context = activity
+                    )
+
+                    handleSignIn(result)
+
+                    // insert into database
+                    val user = uiState.value.user
+                    user?.let {
+                        userRepository.upsert(user)
+                    }
+
+                    onEvent(WelcomeScreenUiEvent.OnLoginSuccess)
+
+                } catch (e: Exception) {
+                    setErrorMessage(e.message ?: "Sign in failed")
+                    e.printStackTrace()
+                } finally {
+                    setLoading(false)
+                }
+            }
+        }
+    }
+
+
+    fun onEvent(event: WelcomeScreenUiEvent) {
+        viewModelScope.launch {
+            when (event) {
+                is WelcomeScreenUiEvent.OnLoginSuccess -> {
+                    viewModelScope.launch {
+                        screenViewRepository.markScreenAsShown(Routes.WELCOME_SCREEN)
+                    }
                 }
 
-            } catch (e: Exception) {
-                setErrorMessage(e.message ?: "Sign in failed")
-                e.printStackTrace()
-            } finally {
-                setLoading(false)
-    }
+                is WelcomeScreenUiEvent.OnSkipSuccess -> {
+
+                }
+            }
         }
     }
 
     private suspend fun handleSignIn(result: GetCredentialResponse)
     {
-        when(val credential = result.credential)
-        {
-            is GoogleIdTokenCredential -> {
+        val credential = result.credential
 
-                val tokenCredential =  GoogleIdTokenCredential.createFrom(credential.data)
+        when (credential.type) {
+            TYPE_GOOGLE_ID_TOKEN_CREDENTIAL -> {
+                try {
+                       val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                    val idToken = googleIdTokenCredential.idToken
 
-                val idToken = tokenCredential.idToken
+                    // Ensure idToken is not null or empty before proceeding
+                    if (idToken.isEmpty()) {
+                        Log.e("AuthSignIn", "ID token from GoogleIdTokenCredential is null or empty.")
+                        setErrorMessage("Failed to retrieve Google ID token.")
+                        return
+                    }
 
-                val firebaseCredential = GoogleAuthProvider.getCredential(idToken,null)
+                    val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
+                    val authResult = firebaseAuth.signInWithCredential(firebaseCredential).await()
+                    setUser(authResult.user)
+                    Log.d("AuthSignIn", "Successfully signed in with Firebase using Google ID Token.")
+                } catch (e: Exception) {
 
-                val authResult = firebaseAuth.signInWithCredential(firebaseCredential)
-                    .await()
-                setUser(authResult.user)
-            }else -> setErrorMessage("Invalid Credential Type")
+                    Log.e("AuthSignIn", "Error processing Google ID Token credential: ${e.message}", e)
+                    setErrorMessage("Failed to process Google sign-in: ${e.localizedMessage}")
+                }
+            }
+             else -> {
+                Log.w("AuthSignIn", "Received unsupported credential type: ${credential.type}")
+                setErrorMessage("Unsupported credential type received.")
+            }
         }
     }
 
