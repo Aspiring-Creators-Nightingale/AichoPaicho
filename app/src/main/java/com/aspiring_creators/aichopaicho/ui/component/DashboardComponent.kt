@@ -4,13 +4,19 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -22,6 +28,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,6 +40,8 @@ import coil3.request.crossfade
 import coil3.request.error
 import coil3.request.placeholder
 import com.aspiring_creators.aichopaicho.R
+import com.aspiring_creators.aichopaicho.ui.screens.DashboardScreen
+import com.aspiring_creators.aichopaicho.viewmodel.data.DashboardScreenUiState
 
 @Composable
  fun UserProfileImage(
@@ -89,3 +99,180 @@ fun UserProfileImagePreview()
 }
 
 
+@Composable
+ fun ErrorContent(
+    errorMessage: String,
+    onRetry: () -> Unit
+) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            TextComponent(
+                value = "Error: $errorMessage",
+                textSize = 25.sp,
+                textColor = R.color.error
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ButtonComponent(
+                R.drawable.logo_skip,
+                "Retry",
+                onClick = onRetry
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ErrorContentPreview()
+{
+    ErrorContent(
+        errorMessage = "An error occurred",
+        onRetry = {}
+    )
+}
+
+@Composable
+ fun DashboardContent(
+    uiState: DashboardScreenUiState,
+    onSignOut: (() -> Unit)?,
+    onNavigateToProfile: (() -> Unit)?,
+    onNavigateToTransactions: (() -> Unit)?,
+    onRefresh: () -> Unit,
+    onSignOutClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        // Welcome Card
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // User Profile Image
+                UserProfileImage(
+                    photoUrl = uiState.user?.photoUrl.toString(),
+                    userName = uiState.user?.name,
+                    modifier = Modifier.size(64.dp)
+                )
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                // User Info
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = "Welcome back!",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Normal
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = uiState.user?.name ?: "User",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    uiState.user?.email?.let { email ->
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = email,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Quick Actions
+        Text(
+            text = "Quick Actions",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        // Navigation Buttons
+        onNavigateToTransactions?.let { navigateToTransactions ->
+            ButtonComponent(
+                R.drawable.logo_aichopaicho,
+                "View Transactions",
+                onClick = navigateToTransactions,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
+        onNavigateToProfile?.let { navigateToProfile ->
+            ButtonComponent(
+                R.drawable.logo_aichopaicho,
+                "Profile Settings",
+                onClick = navigateToProfile,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
+        ButtonComponent(
+            R.drawable.logo_skip,
+            "Refresh Data",
+            onClick = onRefresh,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        // Sign Out Button
+        onSignOut?.let {
+            ButtonComponent(
+                R.drawable.logo_skip,
+                "Sign Out",
+                onClick = onSignOutClick,
+                modifier = Modifier
+                    .padding(horizontal = 32.dp)
+                    .width(200.dp)
+            )
+        }
+
+        // Error message display
+        uiState.errorMessage?.let { error ->
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DashboardScreenPreview() {
+    DashboardScreen(
+        onSignOut = {},
+        onNavigateToProfile = {},
+        onNavigateToTransactions = {}
+    )
+}

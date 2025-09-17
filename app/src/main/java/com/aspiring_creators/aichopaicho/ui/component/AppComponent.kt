@@ -15,6 +15,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -206,3 +207,39 @@ fun LoadingContextPreview()
     LoadingContent("Dashboard Screen...")
 }
 
+@Composable
+ fun NotSignedInContent(
+    onSignOut: (() -> Unit)?
+) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            TextComponent(
+                value = "You are Not Signed In",
+                textColor = R.color.black,
+                textSize = 30.sp
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            onSignOut?.let { signOut ->
+                ButtonComponent(
+                    R.drawable.logo_sign_in,
+                    "Go to Sign In",
+                    onClick = signOut
+                )
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun NotSignedInContentPreview()
+{
+    NotSignedInContent(onSignOut = {})
+}
