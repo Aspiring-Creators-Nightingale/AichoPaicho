@@ -16,27 +16,25 @@ import com.aspiring_creators.aichopaicho.viewmodel.AppNavigationViewModel
 
 @Composable
 fun AppNavigationGraph(
-   appNavigationViewModel: AppNavigationViewModel = hiltViewModel()
+    appNavigationViewModel: AppNavigationViewModel = hiltViewModel()
 ) {
     val navController = rememberNavController()
-
     val startDestination by appNavigationViewModel.startDestination.collectAsState()
 
+    // Show loading while determining start destination
     if (startDestination == null) {
         CircularProgressIndicator()
-        } else {
-
-
+    } else {
         NavHost(
             navController = navController,
             startDestination = startDestination!!
         ) {
             composable(Routes.WELCOME_SCREEN) {
                 WelcomeScreen(
-                    ShowPermissionScreen = {
+                    onNavigateToPermissions = {
                         navController.navigate(Routes.PERMISSION_CONTACTS_SCREEN) {
-                            launchSingleTop = true
                             popUpTo(Routes.WELCOME_SCREEN) { inclusive = true }
+                            launchSingleTop = true
                         }
                     }
                 )
@@ -44,17 +42,35 @@ fun AppNavigationGraph(
 
             composable(Routes.PERMISSION_CONTACTS_SCREEN) {
                 PermissionScreen(
-                    ShowDashboardScreen = {
+                    onNavigateToDashboard = {
                         navController.navigate(Routes.DASHBOARD_SCREEN) {
-                            launchSingleTop = true
                             popUpTo(Routes.PERMISSION_CONTACTS_SCREEN) { inclusive = true }
+                            launchSingleTop = true
                         }
+                    },
+                    onNavigateBack = {
+                        navController.popBackStack()
                     }
                 )
             }
 
             composable(Routes.DASHBOARD_SCREEN) {
-                DashboardScreen()
+                DashboardScreen(
+                    onSignOut = {
+                        navController.navigate(Routes.WELCOME_SCREEN) {
+                            popUpTo(0) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
+                    onNavigateToProfile = {
+                        // Add when you have profile screen
+                        // navController.navigate(Routes.PROFILE_SCREEN)
+                    },
+                    onNavigateToTransactions = {
+                        // Add when you have transactions screen
+                        // navController.navigate(Routes.TRANSACTIONS_SCREEN)
+                    }
+                )
             }
         }
     }

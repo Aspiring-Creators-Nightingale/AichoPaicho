@@ -1,14 +1,19 @@
 package com.aspiring_creators.aichopaicho.ui.component
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -98,7 +103,8 @@ fun ButtonComponent(
     logo: Int,
     text: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     Button(
         onClick = onClick,
@@ -109,6 +115,7 @@ fun ButtonComponent(
              containerColor = colorResource(R.color.buttonColor),
 //             contentColor = colorResource(R.color.black)
          ),
+        enabled = enabled ,
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp) // Control padding inside the button
     ) {
         Row(
@@ -139,7 +146,6 @@ fun ButtonComponentPreview()
     ButtonComponent(
         logo = R.drawable.logo_google, text = "Sign in with Google",
         onClick = {},
-        modifier = Modifier
     )
 }
 
@@ -173,5 +179,30 @@ fun SnackbarComponent(
     }
 }
 
+@Composable
+fun LoadingContent(text: String) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            CircularProgressIndicator()
+            Spacer(modifier = Modifier.height(16.dp))
+            TextComponent(
+                value = text,
+                textColor = R.color.black,
+                textSize = 16.sp
+            )
+        }
+    }
+}
 
+@Preview(showBackground = true)
+@Composable
+fun LoadingContextPreview()
+{
+    LoadingContent("Dashboard Screen...")
+}
 

@@ -1,54 +1,64 @@
 package com.aspiring_creators.aichopaicho.ui.screens
 
+import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.aspiring_creators.aichopaicho.R
 import com.aspiring_creators.aichopaicho.ui.component.ButtonComponent
 import com.aspiring_creators.aichopaicho.ui.component.LogoTopBar
 import com.aspiring_creators.aichopaicho.ui.component.TextComponent
-import android.Manifest
-import androidx.compose.foundation.layout.Box
-import androidx.compose.material3.Button
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.aspiring_creators.aichopaicho.viewmodel.PermissionViewModel
 import kotlinx.coroutines.launch
 
-
 @Composable
 fun PermissionScreen(
-    permissionViewModel: PermissionViewModel = hiltViewModel(),
-    ShowDashboardScreen: () -> Unit
+    onNavigateToDashboard: () -> Unit,
+    onNavigateBack: (() -> Unit)? = null,
+    permissionViewModel: PermissionViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-
-    val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val uiState by permissionViewModel.uiState.collectAsState()
 
-    // State to track if permission is granted
-    val contactsPermissionGranted = remember {
+    // Track permission state
+    var contactsPermissionGranted by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(
                 context,
@@ -57,93 +67,163 @@ fun PermissionScreen(
         )
     }
 
+    // Update ViewModel when permission state changes
+    LaunchedEffect(contactsPermissionGranted) {
+        permissionViewModel.setPermissionGranted(contactsPermissionGranted)
+    }
+
+    // Permission request launcher
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
-        if (isGranted) {
+        contactsPermissionGranted = isGranted
 
-            scope.launch {
-                snackbarHostState.showSnackbar("Contacts permission granted")
-                permissionViewModel.markPermissionScreenShown()
-                ShowDashboardScreen()
-            }
-        } else {
-            // Show error snackbar with Retry
-            scope.launch {
-                snackbarHostState.showSnackbar(
-                    message = "Permission denied. Please try again later",
-                )
+        scope.launch {
+            if (isGranted) {
+                snackbarHostState.showSnackbar("Contacts permission granted!")
+                val result = permissionViewModel.grantPermissionAndProceed()
+                if (result.isSuccess) {
+                    onNavigateToDashboard()
+                }
+            } else {
+                snackbarHostState.showSnackbar("Permission denied. You can still use the app without contact access.")
             }
         }
     }
+
+    // Auto-navigate if permission is already granted
+    LaunchedEffect(contactsPermissionGranted) {
+        if (contactsPermissionGranted) {
+            val result = permissionViewModel.grantPermissionAndProceed()
+            if (result.isSuccess) {
+                onNavigateToDashboard()
+            }
+        }
+    }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Surface(
-            modifier = Modifier.fillMaxWidth().padding(paddingValues),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            color = colorResource(R.color.appThemeColor)
         ) {
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.Center
+            ) {
 
-                ) {
-
-                LogoTopBar(logo = R.drawable.logo_contacts, title = "Allow Contact Access")
+                LogoTopBar(
+                    logo = R.drawable.logo_contacts,
+                    title = stringResource(R.string.allow_contact_access)
+                )
 
                 Spacer(modifier = Modifier.size(70.dp))
 
                 TextComponent(
-                    value = "Give us access to your contacts to quickly add friends and family when you record a transaction. We never store or share your information.",
+                    value = stringResource(R.string.ask_contact_access),
                     textSize = 30.sp,
                     textColor = R.color.textColor
                 )
 
                 Spacer(modifier = Modifier.size(70.dp))
 
+                // Show error message if any
+                uiState.errorMessage?.let { error ->
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        textAlign = TextAlign.Center
+                    )
 
+                    Spacer(modifier = Modifier.size(16.dp))
+                }
+
+                // Permission Button
                 ButtonComponent(
-                    R.drawable.logo_contacts, text = "Give Contact Access",
+                    R.drawable.logo_contacts,
+                    text = if (contactsPermissionGranted) "Permission Already Granted" else "Give Contact Access",
                     onClick = {
                         when {
-                            contactsPermissionGranted.value -> {
+                            contactsPermissionGranted -> {
                                 scope.launch {
-                                    snackbarHostState.showSnackbar("Contacts permission already granted")
-                                    permissionViewModel.markPermissionScreenShown()
-                                    ShowDashboardScreen()
+                                    snackbarHostState.showSnackbar("Contacts permission already granted!")
+                                    val result = permissionViewModel.grantPermissionAndProceed()
+                                    if (result.isSuccess) {
+                                        onNavigateToDashboard()
+                                    }
                                 }
                             }
-
                             else -> {
                                 requestPermissionLauncher.launch(Manifest.permission.READ_CONTACTS)
                             }
                         }
                     },
-                    modifier = Modifier
+                    enabled = !uiState.isLoading
                 )
 
+                Spacer(modifier = Modifier.size(16.dp))
+
+                // Skip Button
                 ButtonComponent(
-                    R.drawable.logo_skip, "Skip for Now",
+                    R.drawable.logo_skip,
+                    "Skip for Now",
                     onClick = {
                         scope.launch {
-
-                            snackbarHostState.showSnackbar("Permission request skipped")
-                            permissionViewModel.markPermissionScreenShown()
-                            ShowDashboardScreen()
+                            snackbarHostState.showSnackbar("You can grant permission later in settings")
+                            val result = permissionViewModel.skipPermissionAndProceed()
+                            if (result.isSuccess) {
+                                onNavigateToDashboard()
+                            }
                         }
                     },
+                    enabled = !uiState.isLoading,
                     modifier = Modifier
                         .padding(horizontal = 75.dp)
                         .width(250.dp)
                 )
 
-            }
+                // Back Button (if provided)
+                onNavigateBack?.let { navigateBack ->
+                    Spacer(modifier = Modifier.size(16.dp))
 
+                    ButtonComponent(
+                        R.drawable.logo_skip, // or use a back icon
+                        "Back",
+                        onClick = navigateBack,
+                        enabled = !uiState.isLoading,
+                        modifier = Modifier
+                            .padding(horizontal = 100.dp)
+                            .width(200.dp)
+                    )
+                }
+
+                // Loading indicator
+                if (uiState.isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+            }
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun PermissionScreenPreview()
-{
-    PermissionScreen(ShowDashboardScreen = {})
+fun PermissionScreenPreview() {
+    PermissionScreen(
+        onNavigateToDashboard = {},
+        onNavigateBack = {}
+    )
 }

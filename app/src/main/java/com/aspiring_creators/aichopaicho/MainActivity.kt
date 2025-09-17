@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -33,15 +34,9 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AichoPaicho(
-    welcomeViewModel: WelcomeViewModel = hiltViewModel(),
 )
 {
-    val context = LocalContext.current
-    val activity = context as ComponentActivity
-    welcomeViewModel.handleGoogleIdToken(activity, true)
-
     Surface(modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars)) {
         AppNavigationGraph()
     }
-
 }

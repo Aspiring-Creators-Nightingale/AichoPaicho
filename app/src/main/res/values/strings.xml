@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">AichoPaicho</string>
     <string name="web_client">105880179467-riu4tm6vme03n75g57bib742gcdpls05.apps.googleusercontent.com</string>
+    <string name="description">Photo Url</string>
+    <string name="ask_contact_access">Give us access to your contacts to quickly add friends and family when you record a transaction. We never store or share your information.</string>
+    <string name="allow_contact_access">Allow Contact Access</string>
 </resources>

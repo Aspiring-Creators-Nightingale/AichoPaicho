@@ -89,4 +89,9 @@ dependencies {
     ksp(libs.hilt.android.compiler)
     ksp(libs.androidx.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
+
+    // coil for image
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+
 }
