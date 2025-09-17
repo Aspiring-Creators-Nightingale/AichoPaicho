@@ -1,17 +1,26 @@
 package com.aspiring_creators.aichopaicho.ui.component
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,8 +37,6 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aspiring_creators.aichopaicho.R
-import java.nio.file.WatchEvent
-import kotlin.math.log
 
 
 @Composable
@@ -47,7 +54,7 @@ fun LogoTopBar(logo: Int, title: String)
         )
         Spacer(modifier = Modifier.size(36.dp))
 
-       TextComponent("AichoPaicho", textSize = 35.sp)
+       TextComponent("AichoPaicho", textSize = 35.sp,)
 
     }
 }
@@ -59,7 +66,12 @@ fun LogoTopBarPreview()
 }
 
 @Composable
-fun TextComponent(value: String, textSize: TextUnit = 12.sp, textColor: Int = R.color.textColor) {
+fun TextComponent(
+    value: String,
+    textSize: TextUnit = 12.sp,
+    textColor: Int = R.color.textColor,
+    lineHeight: TextUnit = TextUnit.Unspecified
+) {
 
 
     val crimsonTextFamily = FontFamily(
@@ -75,14 +87,15 @@ fun TextComponent(value: String, textSize: TextUnit = 12.sp, textColor: Int = R.
         color = colorResource(textColor),
         fontSize = textSize,
         fontWeight = FontWeight.Normal,
-        textAlign = TextAlign.Center
+        textAlign = TextAlign.Center,
+        lineHeight = lineHeight
     )
 }
 @Preview(showBackground = true)
 @Composable
 fun TextComponentPreview()
 {
-    TextComponent(value = "Welcome to Aicho Paicho ffdfgfddgdfgdfgdgdfgdfgdfgdfg dfgdfgd fg dgdfg dfdgd gdf fdgdfg dfg", textSize = 27.sp)
+    TextComponent(value = "Welcome to Aicho Paicho dfg dfg", textSize = 27.sp,)
 }
 
 
@@ -91,7 +104,8 @@ fun ButtonComponent(
     logo: Int,
     text: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     Button(
         onClick = onClick,
@@ -102,6 +116,7 @@ fun ButtonComponent(
              containerColor = colorResource(R.color.buttonColor),
 //             contentColor = colorResource(R.color.black)
          ),
+        enabled = enabled ,
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp) // Control padding inside the button
     ) {
         Row(
@@ -119,7 +134,7 @@ fun ButtonComponent(
             TextComponent(
                 value = text,
                 textSize = 20.sp,
-                textColor = R.color.black
+                textColor = R.color.black,
             )
         }
     }
@@ -132,11 +147,99 @@ fun ButtonComponentPreview()
     ButtonComponent(
         logo = R.drawable.logo_google, text = "Sign in with Google",
         onClick = {},
-        modifier = Modifier
     )
 }
 
+@Composable
+fun SnackbarComponent(
+    snackbarHostState: SnackbarHostState,
+    modifier: Modifier = Modifier
+) {
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = modifier,
+    ) { data ->
+        Snackbar(
+            containerColor = colorResource(R.color.buttonColor),
+            contentColor = colorResource(R.color.black),
+            actionOnNewLine = true,
+            shape = RoundedCornerShape(12.dp),
+            action = {
+                data.visuals.actionLabel?.let { actionLabel ->
+                    TextButton(onClick = { data.performAction() }) {
+                        Text(
+                            text = actionLabel,
+                            color = colorResource(R.color.black)
+                        )
+                    }
+                }
+            }
+        ) {
+            Text(text = data.visuals.message)
+        }
+    }
+}
 
+@Composable
+fun LoadingContent(text: String) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            CircularProgressIndicator()
+            Spacer(modifier = Modifier.height(16.dp))
+            TextComponent(
+                value = text,
+                textColor = R.color.black,
+                textSize = 16.sp
+            )
+        }
+    }
+}
 
+@Preview(showBackground = true)
+@Composable
+fun LoadingContextPreview()
+{
+    LoadingContent("Dashboard Screen...")
+}
 
+@Composable
+ fun NotSignedInContent(
+    onSignOut: (() -> Unit)?
+) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            TextComponent(
+                value = "You are Not Signed In",
+                textColor = R.color.black,
+                textSize = 30.sp
+            )
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            onSignOut?.let { signOut ->
+                ButtonComponent(
+                    R.drawable.logo_sign_in,
+                    "Go to Sign In",
+                    onClick = signOut
+                )
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun NotSignedInContentPreview()
+{
+    NotSignedInContent(onSignOut = {})
+}

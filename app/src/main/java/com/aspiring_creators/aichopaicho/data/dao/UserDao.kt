@@ -21,4 +21,6 @@ interface UserDao {
     @Query("SELECT * FROM users WHERE isDeleted = 0 and id = :id")
     suspend fun getUser(id: String ): User?
 
+
+
 }

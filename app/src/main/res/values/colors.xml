@@ -9,5 +9,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="appThemeColor">#E6E0E9</color>
     <color name="buttonColor">#ECD4D4</color>
+    <color name="error">#FFB00020</color>
     <color name="textColor">#534A6A</color>
 </resources>

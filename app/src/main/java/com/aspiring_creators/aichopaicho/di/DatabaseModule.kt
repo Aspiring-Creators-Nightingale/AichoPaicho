@@ -21,12 +21,12 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideAppDatabase(@ApplicationContext appContext: Context): AppDatabase { // Changed to provide AppDatabase
+    fun provideAppDatabase(@ApplicationContext appContext: Context): AppDatabase {
         return Room.databaseBuilder(
                 appContext,
                 AppDatabase::class.java,
-                "aichopaicho_app_database" // Single database file name
-            ).fallbackToDestructiveMigration(false) // Important: For new/consolidated DB. Review for production.
+                "aichopaicho_app_database"
+            ).fallbackToDestructiveMigration(false) // review
          .build()
     }
 

@@ -1,6 +1,7 @@
 package com.aspiring_creators.aichopaicho.data.local
 
 import androidx.room.Dao
+import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
@@ -11,6 +12,6 @@ interface ScreenViewDao {
     @Upsert
     suspend fun upsertScreenView(screenView: ScreenView)
 
-    @Query("SELECT * FROM screen_views WHERE screenId = :screenId")
-    fun getScreenView(screenId: String): Flow<ScreenView?>
+    @Query("SELECT hasBeenShown FROM screen_views WHERE screenId = :screenId")
+    suspend fun getScreenView(screenId: String): Boolean?
 }
