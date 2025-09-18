@@ -146,7 +146,7 @@ fun PermissionScreen(
 
                 // Permission Button
                 ButtonComponent(
-                    R.drawable.logo_contacts,
+                    logo = R.drawable.logo_contacts,
                     text = if (contactsPermissionGranted) "Permission Already Granted" else "Give Contact Access",
                     onClick = {
                         when {
@@ -171,8 +171,8 @@ fun PermissionScreen(
 
                 // Skip Button
                 ButtonComponent(
-                    R.drawable.logo_skip,
-                    "Skip for Now",
+                    logo = R.drawable.logo_skip,
+                    text = "Skip for Now",
                     onClick = {
                         scope.launch {
                             snackbarHostState.showSnackbar("You can grant permission later in settings")
@@ -193,8 +193,8 @@ fun PermissionScreen(
                     Spacer(modifier = Modifier.size(16.dp))
 
                     ButtonComponent(
-                        R.drawable.logo_skip, // or use a back icon
-                        "Back",
+                        logo = R.drawable.logo_skip, // or use a back icon
+                      text =  "Back",
                         onClick = navigateBack,
                         enabled = !uiState.isLoading,
                         modifier = Modifier

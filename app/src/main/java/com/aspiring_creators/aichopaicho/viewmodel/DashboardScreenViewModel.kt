@@ -68,17 +68,13 @@ class DashboardScreenViewModel @Inject constructor(
                 setLoading(true)
                 setErrorMessage(null)
 
-                val user = userRepository.getUser(userId)
-                if (user != null) {
-                    _uiState.value = _uiState.value.copy(
-                        user = user,
-                        isSignedIn = true
-                    )
-                    Log.d("DashboardViewModel", "User data loaded: ${user.name}")
-                } else {
-                    setErrorMessage("User data not found")
-                    Log.w("DashboardViewModel", "No local user data found for: $userId")
-                }
+                val user = userRepository.getUser()
+                Log.e("DashboardViewModel", "Data asked for: $userId and User data loaded: ${user}")
+                _uiState.value = _uiState.value.copy(
+                    user = user,
+                    isSignedIn = true
+                )
+                Log.d("DashboardViewModel", "User data loaded: ${user.name}")
             } catch (e: Exception) {
                 Log.e("DashboardViewModel", "Error loading user data", e)
                 setErrorMessage("Failed to load user data: ${e.message}")

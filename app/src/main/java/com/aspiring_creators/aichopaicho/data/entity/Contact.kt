@@ -1,5 +1,6 @@
 package com.aspiring_creators.aichopaicho.data.entity
 
+import androidx.annotation.Nullable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -7,7 +8,7 @@ import androidx.room.PrimaryKey
 data class Contact(
     @PrimaryKey val id: String,  // UUID
     val name: String,
-    val phone: String?,
+    val phone: List<String?> ,
     val contactId: String?, // system contact ID
     val isDeleted: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),

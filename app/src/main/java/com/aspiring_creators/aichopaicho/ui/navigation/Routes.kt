@@ -9,4 +9,6 @@ object Routes {
     const val DASHBOARD_SCREEN = "dashboard_screen"
 
     const val OFFLINE_INIT_SCREEN = "offline_init_screen"
+
+    const val ADD_TRANSACTION_SCREEN = "add_transaction_screen"
 }

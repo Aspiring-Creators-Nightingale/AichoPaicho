@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 interface ContactDao {
 
     @Upsert
-    suspend fun upsert(contact: Contact)
+    suspend fun upsert(contact: Contact): Long
 
     @Query("UPDATE records SET isDeleted = 1, updatedAt = :updatedAt WHERE id = :id")
     suspend fun softDelete(id: String, updatedAt: Long)

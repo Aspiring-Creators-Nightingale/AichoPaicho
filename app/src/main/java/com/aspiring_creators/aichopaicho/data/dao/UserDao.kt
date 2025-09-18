@@ -18,8 +18,8 @@ interface UserDao {
     @Query("UPDATE users SET isDeleted = 1, updatedAt = :updatedAt WHERE id = :id")
     suspend fun softDelete(id: String, updatedAt: Long)
 
-    @Query("SELECT * FROM users WHERE isDeleted = 0 and id = :id")
-    suspend fun getUser(id: String ): User?
+    @Query("SELECT * FROM users WHERE isDeleted = 0 limit 1")
+    suspend fun getUser( ): User
 
 
 

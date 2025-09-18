@@ -9,6 +9,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.aspiring_creators.aichopaicho.ui.screens.AddTransactionScreen
 import com.aspiring_creators.aichopaicho.ui.screens.DashboardScreen
 import com.aspiring_creators.aichopaicho.ui.screens.PermissionScreen
 import com.aspiring_creators.aichopaicho.ui.screens.WelcomeScreen
@@ -62,13 +63,20 @@ fun AppNavigationGraph(
                             launchSingleTop = true
                         }
                     },
-                    onNavigateToProfile = {
-                        // Add when you have profile screen
-                        // navController.navigate(Routes.PROFILE_SCREEN)
+                    onNavigateToAddTransaction = {
+                        navController.navigate(Routes.ADD_TRANSACTION_SCREEN){
+                            launchSingleTop = true
+                        }
                     },
-                    onNavigateToTransactions = {
-                        // Add when you have transactions screen
-                        // navController.navigate(Routes.TRANSACTIONS_SCREEN)
+                    onNavigateToViewTransactions = {},
+                    onNavigateToSettings = {},
+                )
+            }
+
+            composable(Routes.ADD_TRANSACTION_SCREEN) {
+                AddTransactionScreen(
+                    onNavigateBack = {
+                        navController.popBackStack()
                     }
                 )
             }

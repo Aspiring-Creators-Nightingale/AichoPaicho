@@ -19,4 +19,9 @@ class TypeRepository @Inject constructor(private val typeDao: TypeDao) {
     suspend fun getAllTypes(): List<Type> {
         return typeDao.getAllTypes()
     }
+
+    suspend fun getByName(name: String): Type {
+        return typeDao.getByName(name)
+    }
+
 }

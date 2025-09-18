@@ -80,15 +80,12 @@ class WelcomeViewModel @Inject constructor(
 
             // Check if already signed in
             firebaseAuth.currentUser?.let { currentUser ->
-                val localUser = userRepository.getUser(currentUser.uid)
-                if (localUser != null) {
-                    screenViewRepository.markScreenAsShown(Routes.WELCOME_SCREEN)
-                    return Result.success(currentUser)
-                } else {
-                    // Local data inconsistency
-                    firebaseAuth.signOut()
-                    setErrorMessage("Session data mismatch. Please sign in again.")
-                    return Result.failure(Exception("Session data mismatch"))
+                val localUser = userRepository.getUser()
+                if (localUser.id == currentUser.uid) {
+                    run {
+                        screenViewRepository.markScreenAsShown(Routes.WELCOME_SCREEN)
+                        return Result.success(currentUser)
+                    }
                 }
             }
 
@@ -142,9 +139,13 @@ class WelcomeViewModel @Inject constructor(
     suspend fun shouldAutoNavigate(): Boolean {
         val currentUser = firebaseAuth.currentUser
         if (currentUser != null) {
-            val localUser = userRepository.getUser(currentUser.uid)
-            return localUser != null
-        }
+            val localUser = userRepository.getUser()
+            if(localUser.id == currentUser.uid) {
+                return true
+            }else{
+                return false
+            }
+            }
         return false
     }
 

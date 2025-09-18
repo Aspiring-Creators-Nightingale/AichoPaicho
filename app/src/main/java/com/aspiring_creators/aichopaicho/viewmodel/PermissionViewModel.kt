@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aspiring_creators.aichopaicho.data.local.ScreenViewRepository
 import com.aspiring_creators.aichopaicho.ui.navigation.Routes
+import com.aspiring_creators.aichopaicho.viewmodel.data.PermissionScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,11 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class PermissionScreenUiState(
-    val isLoading: Boolean = false,
-    val errorMessage: String? = null,
-    val permissionGranted: Boolean = false
-)
+
 
 @HiltViewModel
 class PermissionViewModel @Inject constructor(
