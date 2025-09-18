@@ -2,9 +2,13 @@ package com.aspiring_creators.aichopaicho.data.entity
 
 import androidx.annotation.Nullable
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "contacts")
+@Entity(
+    tableName = "contacts",
+    indices = [Index(value = ["contactId"], unique = true)]
+)
 data class Contact(
     @PrimaryKey val id: String,  // UUID
     val name: String,

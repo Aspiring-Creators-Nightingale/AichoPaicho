@@ -9,6 +9,7 @@ import androidx.credentials.GetCredentialResponse
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aspiring_creators.aichopaicho.R
+import com.aspiring_creators.aichopaicho.data.entity.User
 import com.aspiring_creators.aichopaicho.data.mapper.toUserEntity
 import com.aspiring_creators.aichopaicho.data.local.ScreenViewRepository
 import com.aspiring_creators.aichopaicho.data.repository.UserRepository
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import java.util.UUID
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -123,6 +125,17 @@ class WelcomeViewModel @Inject constructor(
 
     suspend fun skipSignIn(): Result<Unit> {
         return try {
+            viewModelScope.launch {
+                userRepository.upsert(
+                    User(
+                        UUID.randomUUID().toString(),
+                        null,
+                        null,
+                        null,
+                        isOffline = true
+                    )
+                )
+            }
             screenViewRepository.markScreenAsShown(Routes.WELCOME_SCREEN)
             Result.success(Unit)
         } catch (e: Exception) {
@@ -138,13 +151,9 @@ class WelcomeViewModel @Inject constructor(
     // Helper method to check if user should auto-navigate
     suspend fun shouldAutoNavigate(): Boolean {
         val currentUser = firebaseAuth.currentUser
-        if (currentUser != null) {
+        if (currentUser != null ) {
             val localUser = userRepository.getUser()
-            if(localUser.id == currentUser.uid) {
-                return true
-            }else{
-                return false
-            }
+            return localUser.id == currentUser.uid
             }
         return false
     }

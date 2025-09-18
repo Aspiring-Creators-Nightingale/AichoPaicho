@@ -11,6 +11,7 @@ data class User(
     val email: String?,
     val photoUrl: Uri?,
     val isDeleted: Boolean = false,
+    val isOffline: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )

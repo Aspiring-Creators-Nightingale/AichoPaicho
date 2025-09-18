@@ -1,6 +1,6 @@
 package com.aspiring_creators.aichopaicho.data.repository
 
-import android.util.Log
+import android.database.sqlite.SQLiteConstraintException
 import com.aspiring_creators.aichopaicho.data.dao.ContactDao
 import com.aspiring_creators.aichopaicho.data.entity.Contact
 import kotlinx.coroutines.flow.Flow
@@ -10,11 +10,15 @@ import javax.inject.Singleton
 @Singleton
 class ContactRepository @Inject constructor(private val contactDao: ContactDao) {
 
-    suspend fun upsert(contact: Contact) : Boolean {
+    suspend fun checkAndInsert(contact: Contact) : Boolean {
         return try {
-            contactDao.upsert(contact)
-        true
-        }catch (e: Exception){
+            contactDao.insert(contact)
+            true
+        } catch (e: SQLiteConstraintException) {
+            false
+            throw SQLiteConstraintException("Contact with the same contactId already exists.")
+        } catch (e: Exception) {
+
             false
         }
     }
@@ -26,4 +30,9 @@ class ContactRepository @Inject constructor(private val contactDao: ContactDao) 
     suspend fun getAllContacts(): Flow<List<Contact>> { // Changed from suspend fun based on typical DAO Flow usage
         return contactDao.getAllContacts()
     }
+
+     suspend fun getContactByContactId(contactId: String): Contact? {
+        return contactDao.getContactByContactId(contactId)
+    }
+
 }

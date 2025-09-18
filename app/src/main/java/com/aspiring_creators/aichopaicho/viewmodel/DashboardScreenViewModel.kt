@@ -28,10 +28,10 @@ class DashboardScreenViewModel @Inject constructor(
     private val authStateListener = FirebaseAuth.AuthStateListener { auth ->
         viewModelScope.launch {
             val isSignedIn = auth.currentUser != null
-            _uiState.value = _uiState.value.copy(isSignedIn = isSignedIn)
-
             if (isSignedIn) {
-                loadUserData(auth.currentUser!!.uid)
+            if(_uiState.value.user?.isOffline == false && getUserId() == auth.currentUser?.uid) {
+                _uiState.value = _uiState.value.copy(isSignedIn = isSignedIn)
+            }
             } else {
                 _uiState.value = _uiState.value.copy(
                     user = null,
@@ -42,11 +42,8 @@ class DashboardScreenViewModel @Inject constructor(
     }
 
     init {
+       loadUserData()
         firebaseAuth.addAuthStateListener(authStateListener)
-        // Initial load if user is already signed in
-        firebaseAuth.currentUser?.let { currentUser ->
-            loadUserData(currentUser.uid)
-        }
     }
 
     override fun onCleared() {
@@ -62,14 +59,14 @@ class DashboardScreenViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(errorMessage = value)
     }
 
-    private fun loadUserData(userId: String) {
+    private fun loadUserData() {
         viewModelScope.launch {
             try {
                 setLoading(true)
                 setErrorMessage(null)
 
                 val user = userRepository.getUser()
-                Log.e("DashboardViewModel", "Data asked for: $userId and User data loaded: ${user}")
+
                 _uiState.value = _uiState.value.copy(
                     user = user,
                     isSignedIn = true
@@ -104,20 +101,8 @@ class DashboardScreenViewModel @Inject constructor(
     }
 
     suspend fun refreshUserData(): Result<Unit> {
-        return try {
-            val currentUser = firebaseAuth.currentUser
-            if (currentUser != null) {
-                loadUserData(currentUser.uid)
-                Result.success(Unit)
-            } else {
-                setErrorMessage("No user signed in")
-                Result.failure(Exception("No user signed in"))
-            }
-        } catch (e: Exception) {
-            Log.e("DashboardViewModel", "Error refreshing user data", e)
-            setErrorMessage("Failed to refresh data: ${e.message}")
-            Result.failure(e)
-        }
+
+        return TODO("No need for refresh for now")
     }
 
     fun clearError() {

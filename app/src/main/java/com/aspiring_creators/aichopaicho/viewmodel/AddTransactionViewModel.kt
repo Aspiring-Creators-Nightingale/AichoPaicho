@@ -37,7 +37,7 @@ private val _uiState = MutableStateFlow(AddTransactionUiState())
     private fun handleSubmit()
     {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            _uiState.update { it.copy(isLoading = true, errorMessage = null, submissionSuccessful = false) }
 
             try{
                 if(uiState.value.amount == null){
@@ -47,18 +47,20 @@ private val _uiState = MutableStateFlow(AddTransactionUiState())
                 val type = typeRepository.getByName(uiState.value.type!!)
                 val user = userRepository.getUser()
 
-                val contactToSave = Contact(
-                    id = UUID.randomUUID().toString(),
-                    name = uiState.value.contact!!.name,
-                    phone = uiState.value.contact!!.phone,
-                    contactId = uiState.value.contact!!.contactId,
-                )
+                val contactExist = contactRepository.getContactByContactId(uiState.value.contact!!.contactId!!)
+                val contactToSave: Contact
+                if(contactExist == null) {
+                     contactToSave = Contact(
+                        id = UUID.randomUUID().toString(),
+                        name = uiState.value.contact!!.name,
+                        phone = uiState.value.contact!!.phone,
+                        contactId = uiState.value.contact!!.contactId,
+                    )
 
-               val isUpsert = contactRepository.upsert(contactToSave)
-
-                if(isUpsert) {
-
-
+                     contactRepository.checkAndInsert(contactToSave)
+                }else{
+                    contactToSave = contactExist
+                }
                     val recordToSave = Record(
                         id = UUID.randomUUID().toString(),
                         userId = user.id,
@@ -71,10 +73,10 @@ private val _uiState = MutableStateFlow(AddTransactionUiState())
                     recordRepository.upsert(recordToSave)
 
                     Log.e("AddTransactionViewModel", "handleSubmit: $recordToSave")
-                }
+
                     _uiState.update { it.copy(submissionSuccessful = true, isLoading = false) }
                 }catch (e: Exception){
-                    _uiState.update { it.copy(errorMessage = e.message, isLoading = false) }
+                    _uiState.update { it.copy(errorMessage = e.message, isLoading = false, submissionSuccessful = false) }
             }
         }
     }
