@@ -95,7 +95,7 @@ fun ViewTransactionScreen(
                             viewTransactionViewModel.toggleRecordCompletion(record.id)
                         },
                         onDeleteRecord = {},
-                        onNavigateToContactList = {onNavigateToContactList}
+                        onNavigateToContactList = {onNavigateToContactList(it)}
                     )
                 }
             }

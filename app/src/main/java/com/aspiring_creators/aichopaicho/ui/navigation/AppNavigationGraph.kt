@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.aspiring_creators.aichopaicho.ui.screens.AddTransactionScreen
+import com.aspiring_creators.aichopaicho.ui.screens.ContactTransactionScreen
 import com.aspiring_creators.aichopaicho.ui.screens.DashboardScreen
 import com.aspiring_creators.aichopaicho.ui.screens.PermissionScreen
 import com.aspiring_creators.aichopaicho.ui.screens.TransactionDetailScreen
@@ -98,7 +99,11 @@ fun AppNavigationGraph(
                             launchSingleTop = true
                         }
                     },
-                    onNavigateToContactList ={}
+                    onNavigateToContactList ={
+                        navController.navigate("${Routes.CONTACT_TRANSACTION_SCREEN}/$it"){
+                            launchSingleTop = true
+                        }
+                    }
                 )
             }
 
@@ -113,6 +118,25 @@ fun AppNavigationGraph(
                     transactionId = transactionId!!,
                     onNavigateBack = {
                         navController.popBackStack()
+                    }
+                )
+            }
+            composable(
+                "${Routes.CONTACT_TRANSACTION_SCREEN}/{${Routes.CONTACT_ID}}",
+                arguments = listOf(
+                    navArgument(name = Routes.CONTACT_ID){type = NavType.StringType}
+                )
+            ){
+                val contactId = it.arguments?.getString(Routes.CONTACT_ID)
+                ContactTransactionScreen(
+                    contactId = contactId!!,
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    },
+                    onNavigateToRecord = {
+                        navController.navigate("${Routes.TRANSACTION_DETAIL_SCREEN}/$it"){
+                            launchSingleTop = true
+                        }
                     }
                 )
             }

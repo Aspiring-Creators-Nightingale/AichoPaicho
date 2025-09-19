@@ -702,7 +702,7 @@ fun TransactionCard(
                     .clip(CircleShape)
                     .clickable {
                         contact?.id?.let { onNavigateToContactList(it) }
-                    },
+                    }, // TODO(Show Spotlight for user to see)
                 shape = CircleShape,
                 color = accent,
                 tonalElevation = 2.dp

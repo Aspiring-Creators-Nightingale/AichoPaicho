@@ -3,6 +3,8 @@ package com.aspiring_creators.aichopaicho.ui.component
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ContentResolver
+import android.content.ContentUris
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -812,5 +814,30 @@ fun ContactItemPreview() {
                 contactId = "123"
             )
         )
+    }
+}
+fun openContactDetails(context: Context, contactId: Long) {
+    println("Contact Id $contactId")
+    if (contactId <= 0) {
+        // Handle invalid contact ID
+        // You might show a Toast or log an error
+        println("Invalid contact ID: $contactId")
+        return
+    }
+
+    val contactUri = ContentUris.withAppendedId(
+        ContactsContract.Contacts.CONTENT_URI,
+        contactId
+    )
+
+    val intent = Intent(Intent.ACTION_VIEW, contactUri)
+
+    // Check if there's an app that can handle this intent
+    if (intent.resolveActivity(context.packageManager) != null) {
+        context.startActivity(intent)
+    } else {
+        // Handle the case where no app can open the contact (should be rare)
+        // You might show a Toast message to the user
+        println("No app found to open contact details.")
     }
 }

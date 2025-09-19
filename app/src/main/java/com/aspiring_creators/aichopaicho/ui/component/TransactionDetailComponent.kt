@@ -214,7 +214,9 @@ private fun DetailRow(
 }
 
 @Composable
-fun ContactDisplayRow(contact: com.aspiring_creators.aichopaicho.data.entity.Contact?) {
+fun ContactDisplayRow(
+    contact: Contact?,
+    ) {
     val context = LocalContext.current
     val validContactId = contact?.contactId?.toLongOrNull() // Safely convert to Long
 
@@ -223,6 +225,7 @@ fun ContactDisplayRow(contact: com.aspiring_creators.aichopaicho.data.entity.Con
         horizontalArrangement = Arrangement.SpaceBetween, // Or Arrangement.SpaceEvenly
         verticalAlignment = Alignment.CenterVertically
     ) {
+
         DetailRow(
             label = "Contact",
             value = contact?.name ?: "Unknown Contact",
@@ -239,30 +242,5 @@ fun ContactDisplayRow(contact: com.aspiring_creators.aichopaicho.data.entity.Con
         ) {
             Text(text = "View")
         }
-    }
-}
-fun openContactDetails(context: Context, contactId: Long) {
-    println("Contact Id $contactId")
-    if (contactId <= 0) {
-        // Handle invalid contact ID
-        // You might show a Toast or log an error
-        println("Invalid contact ID: $contactId")
-        return
-    }
-
-    val contactUri = ContentUris.withAppendedId(
-        ContactsContract.Contacts.CONTENT_URI,
-        contactId
-    )
-
-    val intent = Intent(Intent.ACTION_VIEW, contactUri)
-
-    // Check if there's an app that can handle this intent
-    if (intent.resolveActivity(context.packageManager) != null) {
-        context.startActivity(intent)
-    } else {
-        // Handle the case where no app can open the contact (should be rare)
-        // You might show a Toast message to the user
-        println("No app found to open contact details.")
     }
 }

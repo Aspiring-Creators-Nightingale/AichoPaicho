@@ -35,4 +35,8 @@ interface RecordDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRecord(record: Record)
+
+    @Query("SELECT * FROM records WHERE contactId = :contactId AND isDeleted = 0 ORDER BY date DESC")
+    fun getRecordsByContactId(contactId: String): Flow<List<Record>>
+
 }

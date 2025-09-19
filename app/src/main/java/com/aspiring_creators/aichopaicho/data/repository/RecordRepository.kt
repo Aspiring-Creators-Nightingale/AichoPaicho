@@ -17,6 +17,9 @@ class RecordRepository @Inject constructor(private val recordDao: RecordDao) {
         recordDao.upsert(record)
     }
 
+     fun getRecordsByContactId(contactId: String): Flow<List<Record>>{
+        return recordDao.getRecordsByContactId(contactId)
+    }
 
     suspend fun getTotalByType(typeId: Int): Int {
         return recordDao.getTotalByType(typeId)

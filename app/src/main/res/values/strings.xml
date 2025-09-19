@@ -4,4 +4,5 @@
     <string name="description">Photo Url</string>
     <string name="ask_contact_access">Give us access to your contacts to quickly add friends and family when you record a transaction. We never store or share your information.</string>
     <string name="allow_contact_access">Allow Contact Access</string>
+    <string name="npr">NPR </string>
 </resources>
