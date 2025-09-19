@@ -1,8 +1,6 @@
 package com.aspiring_creators.aichopaicho.ui.component
 
 import android.icu.util.Calendar
-import android.widget.DatePicker
-import androidx.compose.animation.core.copy
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.defaultMinSize
@@ -11,17 +9,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material3.DatePicker
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,16 +21,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.disabled
-import androidx.compose.ui.semantics.error
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.text.color
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import kotlin.text.format
 
 @Composable
 fun StringInputField(
@@ -79,10 +66,11 @@ fun AmountInputField(
     onAmountTextChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     isError: Boolean = false,
-    errorMessage: String? = null
+    errorMessage: String? = null,
+    value: String
 ) {
-    var currentValue by remember {
-        mutableStateOf("")
+    var currentValue by remember(value) {
+        mutableStateOf(value)
     }
     Column(modifier = modifier) {
         OutlinedTextField(
@@ -120,7 +108,8 @@ fun AmountInputFieldPreview() {
             label = "Transaction Amount",
             onAmountTextChange = {  it },
             isError = isError,
-            errorMessage = if (isError) "Please enter a valid number" else null
+            errorMessage = if (isError) "Please enter a valid number" else null,
+            value = amountInputText
         )
         Text(text = "Parsed Int: ${amountInt ?: "Invalid"}", modifier = Modifier.padding(top = 8.dp))
     }
@@ -138,7 +127,8 @@ fun AmountInputFieldErorPreview() {
             label = "Transaction Amount",
             onAmountTextChange = {  it },
             isError = isError,
-            errorMessage = if (isError) "Please enter a valid number" else null
+            errorMessage = if (isError) "Please enter a valid number" else null,
+            value = amountInputText
         )
         Text(text = "Parsed Int: ${amountInt ?: "Invalid"}", modifier = Modifier.padding(top = 8.dp))
     }
@@ -149,9 +139,12 @@ fun DateInputField(
     label: String,
     onDateSelected: (Long?) -> Unit,
     modifier: Modifier = Modifier,
-    initializeWithCurrentDate: Boolean = false
+    initializeWithCurrentDate: Boolean = false,
+    selectedDate: Long?
 ) {
-    var selectedTimestamp by remember { mutableStateOf<Long?>(null) }
+    var selectedTimestamp by remember(selectedDate) {
+        mutableStateOf(selectedDate)
+    }
     var currentDate by remember { mutableStateOf("") }
 
     val context = LocalContext.current
@@ -217,7 +210,8 @@ fun DateInputFieldPreviewEmpty() {
             DateInputField(
                 label = "Transaction Date",
                 onDateSelected = { it },
-                initializeWithCurrentDate = true
+                initializeWithCurrentDate = true,
+                selectedDate = date
             )
             Text(
                 text = "Selected: ${date?.let { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(it)) } ?: "None"}",
@@ -235,10 +229,11 @@ fun MultiLineTextInputField(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     minLines: Int = 3,
-    maxLines: Int = 5
+    maxLines: Int = 5,
+    value: String
 ) {
-    var currentValue by remember {
-        mutableStateOf("")
+    var currentValue by remember(value) {
+        mutableStateOf(value)
     }
     OutlinedTextField(
         value = currentValue,
@@ -261,7 +256,13 @@ fun MultiLineTextInputFieldPreview() {
     Column(modifier = Modifier.padding(16.dp)) {
         MultiLineTextInputField(
             label = "Notes",
-            onValueChange = {  it }
+            onValueChange = {  it },
+            value = notes
+        )
+        Text(
+            text = "Notes: $notes",
+            modifier = Modifier.padding(top = 8.dp),
+            style = MaterialTheme.typography.bodySmall
         )
     }
 }

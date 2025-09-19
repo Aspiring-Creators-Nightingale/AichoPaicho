@@ -39,7 +39,6 @@ import com.aspiring_creators.aichopaicho.ui.component.TextComponent
 import com.aspiring_creators.aichopaicho.ui.component.TypeConstants
 import com.aspiring_creators.aichopaicho.viewmodel.AddTransactionViewModel
 import com.aspiring_creators.aichopaicho.viewmodel.data.AddTransactionUiEvents
-import kotlinx.coroutines.launch
 
 
 @Composable
@@ -52,6 +51,19 @@ fun AddTransactionScreen(
 
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // Handle snackbar messages reactively
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let { errorMessage ->
+            snackbarHostState.showSnackbar(errorMessage)
+        }
+    }
+
+    LaunchedEffect(uiState.submissionSuccessful) {
+        if (uiState.submissionSuccessful) {
+            snackbarHostState.showSnackbar("Transaction added successfully")
+        }
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -124,10 +136,11 @@ fun AddTransactionScreen(
                     Spacer(modifier = Modifier.size(12.dp))
                     ContactPickerField(
                         label = "Contact Name",
+                        selectedContact = uiState.contact, // Pass the selected contact to clear it
                         onContactSelected = { contact ->
-                          addTransactionViewModel.onEvent(
-                              AddTransactionUiEvents.ContactSelected(contact)
-                          )
+                            addTransactionViewModel.onEvent(
+                                AddTransactionUiEvents.ContactSelected(contact)
+                            )
                         }
                     )
                 }
@@ -144,6 +157,7 @@ fun AddTransactionScreen(
                     Spacer(modifier = Modifier.size(12.dp))
                     AmountInputField(
                         label = "Amount",
+                        value = uiState.amount?.toString() ?: "", // Pass the current value to clear it
                         onAmountTextChange = {
                             addTransactionViewModel.onEvent(
                                 AddTransactionUiEvents.AmountEntered(it)
@@ -168,8 +182,9 @@ fun AddTransactionScreen(
                             addTransactionViewModel.onEvent(
                                 AddTransactionUiEvents.DateEntered(it!!)
                             )
-                        },
-                        initializeWithCurrentDate = true
+                        }, // Pass the selected date
+                        initializeWithCurrentDate = true,
+                        selectedDate = uiState.date
                     )
                 }
                 Row(
@@ -185,6 +200,7 @@ fun AddTransactionScreen(
 
                     MultiLineTextInputField(
                         label = "Description",
+                        value = uiState.description ?: "", // Pass the current value to clear it
                         onValueChange = {
                             addTransactionViewModel.onEvent(
                                 AddTransactionUiEvents.DescriptionEntered(it)
@@ -209,19 +225,9 @@ fun AddTransactionScreen(
                     text = "Save",
                     onClick = {
                         if(!uiState.isLoading) {
-                            scope.launch {
-                                addTransactionViewModel.onEvent(
-                                    AddTransactionUiEvents.Submit
-                                )
-                                if (uiState.errorMessage != null) {
-                                    snackbarHostState.showSnackbar(uiState.errorMessage!!)
-                                }
-                                if (uiState.submissionSuccessful) {
-                                    snackbarHostState.showSnackbar("Transaction added successfully")
-                                }
-                            }
-                        }else{
-                            null
+                            addTransactionViewModel.onEvent(
+                                AddTransactionUiEvents.Submit
+                            )
                         }
                     },
                     contentDescription = "Save Button",
@@ -236,9 +242,7 @@ fun AddTransactionScreen(
                         text = "Cancel",
                         onClick = {
                             if (!uiState.isLoading) {
-                                navigateBack
-                            }else{
-                                null
+                                navigateBack()
                             }
                         },
                         contentDescription = "Cancel Button",
@@ -250,6 +254,8 @@ fun AddTransactionScreen(
         }
     }
 }
+
+
 @Preview(showBackground = true)
 @Composable
 fun AddTransactionPreview()

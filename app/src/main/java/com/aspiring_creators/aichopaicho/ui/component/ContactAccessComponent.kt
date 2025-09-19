@@ -16,7 +16,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,9 +37,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -69,9 +66,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.aspiring_creators.aichopaicho.data.entity.Contact
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import kotlin.time.Duration
 
 
 @Composable
@@ -79,11 +74,14 @@ fun ContactPickerField(
     label: String,
     onContactSelected: (Contact) -> Unit, // Now returns Contact object
     modifier: Modifier = Modifier,
-    placeholder: String = "Click logo to select from contacts"
+    placeholder: String = "Click logo to select from contacts",
+    selectedContact: Contact?,
 ) {
     var showContactPicker by remember { mutableStateOf(false) }
-    var currentValue by remember { mutableStateOf("") }
-
+//    var currentValue by remember { mutableStateOf("") }
+    var currentValue by remember(selectedContact) {
+        mutableStateOf(selectedContact?.name ?: "")
+    }
     Column(modifier = modifier) {
         OutlinedTextField(
             value = currentValue,
@@ -406,7 +404,8 @@ fun ContactPickerFieldPreview() {
                     if (contact.phone.isNotEmpty()) {
                         println("Phone numbers: ${contact.phone}")
                     }
-                }
+                },
+                selectedContact = null
             )
 
             Text("Usage Example:", style = MaterialTheme.typography.headlineSmall)
