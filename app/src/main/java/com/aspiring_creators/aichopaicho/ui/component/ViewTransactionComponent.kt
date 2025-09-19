@@ -3,7 +3,6 @@ package com.aspiring_creators.aichopaicho.ui.component
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
@@ -13,18 +12,13 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.List
-import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -47,11 +41,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.Image
 import com.aspiring_creators.aichopaicho.data.entity.Contact
 import com.aspiring_creators.aichopaicho.data.entity.Record
-import com.aspiring_creators.aichopaicho.data.entity.Type
 import com.aspiring_creators.aichopaicho.data.entity.UserRecordSummary
+import com.aspiring_creators.aichopaicho.viewmodel.ContactPreview
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.String
@@ -65,6 +58,7 @@ fun TransactionTopBar(
     dateRange: Pair<Long, Long>,
     onDateRangeSelected: (Long, Long) -> Unit
 ) {
+
     val dateFormatter = remember { SimpleDateFormat("dd MMM yy", Locale.getDefault()) }
     val dateRangeText =
         "${dateFormatter.format(Date(dateRange.first))} – ${dateFormatter.format(Date(dateRange.second))}"
@@ -72,8 +66,8 @@ fun TransactionTopBar(
     var showDatePickerDialog by remember { mutableStateOf(false) }
 
     val dateRangePickerState = rememberDateRangePickerState(
-        initialSelectedStartDateMillis = if (dateRange.first != 0L) dateRange.first else null,
-        initialSelectedEndDateMillis = if (dateRange.second != 0L) dateRange.second else null,
+        initialSelectedStartDateMillis = if (dateRange.first != Long.MIN_VALUE) dateRange.first else null,
+        initialSelectedEndDateMillis = if (dateRange.second != Long.MAX_VALUE) dateRange.second else null,
     )
 
 
@@ -158,7 +152,7 @@ fun TransactionTopBar(
 fun TopBarPreview() {
 TransactionTopBar(
     onNavigateBack = {},
-    dateRange = 0L to 0L,
+    dateRange = System.currentTimeMillis() - 122323 to System.currentTimeMillis(),
     onDateRangeSelected = { _, _ -> }
 )
 }
@@ -466,7 +460,6 @@ fun ContactChip(
 
 /* ----- Data Classes and Preview ----- */
 
-data class ContactPreview(val id: String, val name: String, val amount: Double)
 
 @Preview(showBackground = true, widthDp = 360)
 @Composable
@@ -502,6 +495,7 @@ fun TransactionFilterSection(
     onFromQueryChanged: (String) -> Unit,
     moneyToQuery: String,
     onMoneyToQueryChanged: (String) -> Unit,
+    onMoneyFilterApplyClicked: () -> Unit,
     showCompleted: Boolean,
     onShowCompletedChanged: (Boolean) -> Unit
 ) {
@@ -540,8 +534,8 @@ fun TransactionFilterSection(
                     Spacer(modifier = Modifier.width(8.dp))
                     // brief summary of active filters in single line (compact)
                     val summary = buildString {
-                        if (selectedType == 1) append("• Lent ")
-                        else if (selectedType == 2) append("• Borrowed ")
+                        if (selectedType == TypeConstants.LENT_ID) append("• Lent ")
+                        else if (selectedType == TypeConstants.BORROWED_ID) append("• Borrowed ")
                         if (fromQuery.isNotBlank()) append("• From=$fromQuery ")
                         if (moneyToQuery.isNotBlank()) append("• ≤ $moneyToQuery")
                         if (showCompleted) append(" • Completed")
@@ -583,15 +577,15 @@ fun TransactionFilterSection(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         FilterChip(
-                            selected = selectedType == 1,
-                            onClick = { onTypeSelected(if (selectedType == 1) null else 1) },
-                            label = { Text("Lent") },
+                            selected = selectedType == TypeConstants.LENT_ID,
+                            onClick = { onTypeSelected(if (selectedType == TypeConstants.LENT_ID) null else TypeConstants.LENT_ID) },
+                            label = { Text(TypeConstants.TYPE_LENT) },
                             modifier = Modifier.weight(1f)
                         )
                         FilterChip(
-                            selected = selectedType == 2,
-                            onClick = { onTypeSelected(if (selectedType == 2) null else 2) },
-                            label = { Text("Borrowed") },
+                            selected = selectedType == TypeConstants.BORROWED_ID,
+                            onClick = { onTypeSelected(if (selectedType == TypeConstants.BORROWED_ID) null else TypeConstants.BORROWED_ID) },
+                            label = { Text(TypeConstants.TYPE_BORROWED) },
                             modifier = Modifier.weight(1f)
                         )
 
@@ -627,7 +621,7 @@ fun TransactionFilterSection(
                         )
                         // Apply button
                         FilledTonalButton(
-                            onClick = { /* filter is controlled - parent reacts to the states */ },
+                            onClick = { onMoneyFilterApplyClicked() },
                             modifier = Modifier.height(56.dp)
                         ) {
                             Text("Apply")
@@ -766,13 +760,13 @@ fun TransactionCard(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     // Delete icon small
-                    IconButton(onClick = onDeleteRecord) {
+/*                    IconButton(onClick = onDeleteRecord) {
                         Icon(
                             imageVector = Icons.Outlined.Delete,
                             contentDescription = "Delete",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                    }
+                    }*/
                 }
             }
         }
@@ -795,6 +789,7 @@ fun TransactionFilterSectionPreview() {
         onFromQueryChanged = { from = it },
         moneyToQuery = money,
         onMoneyToQueryChanged = { money = it },
+        onMoneyFilterApplyClicked = {},
         showCompleted = showCompleted,
         onShowCompletedChanged = { showCompleted = it }
     )

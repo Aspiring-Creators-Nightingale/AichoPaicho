@@ -1,3 +1,4 @@
+// ViewTransactionViewModel.kt
 package com.aspiring_creators.aichopaicho.viewmodel
 
 import androidx.lifecycle.ViewModel
@@ -26,7 +27,7 @@ class ViewTransactionViewModel @Inject constructor(
     // Initialize with current month date range
     private val currentTime = System.currentTimeMillis()
     private val calendar = Calendar.getInstance().apply { timeInMillis = currentTime }
-    private val startOfMonth = calendar.apply {
+/*    private val startOfMonth = calendar.apply {
         set(Calendar.DAY_OF_MONTH, 1)
         set(Calendar.HOUR_OF_DAY, 0)
         set(Calendar.MINUTE, 0)
@@ -40,11 +41,11 @@ class ViewTransactionViewModel @Inject constructor(
         set(Calendar.MINUTE, 59)
         set(Calendar.SECOND, 59)
         set(Calendar.MILLISECOND, 999)
-    }.timeInMillis
+    }.timeInMillis*/
 
     init {
         _uiState.value = _uiState.value.copy(
-            dateRange = startOfMonth to endOfMonth
+            dateRange = Long.MIN_VALUE to Long.MAX_VALUE
         )
     }
 
@@ -54,8 +55,8 @@ class ViewTransactionViewModel @Inject constructor(
             try {
                 // Load all data concurrently
                 launch { loadRecordSummary() }
-                launch { loadRecords() }
                 launch { loadContacts() }
+                launch { loadRecords() }
                 launch { loadTypes() }
             } catch (e: Exception) {
                 setErrorMessage(e.message ?: "Unknown error occurred")
@@ -81,10 +82,55 @@ class ViewTransactionViewModel @Inject constructor(
             .collect { records ->
                 _uiState.value = _uiState.value.copy(
                     records = records,
-                    filteredRecords = applyFilters(records)
+                    filteredRecords = applyFilters(records),
+//                    lentContacts = contactPreviews.first,
+//                    borrowedContacts = contactPreviews.second
                 )
             }
     }
+
+  /*  private fun calculateContactPreviews(records: List<Record>):
+            Pair<List<ContactPreview>, List<ContactPreview>> {
+        val currentContacts = _uiState.value.contacts
+
+
+        // Group records by (contactId, typeId) and sum amounts
+        val contactSummary: Map<Pair<String?, Int?>, Double> = records
+            .filter { !it.isDeleted }
+            .groupBy { it.contactId to it.typeId }
+            .mapValues { (_, list) -> list.sumOf { it.amount.toDouble() } }
+
+        val lentContacts = mutableListOf<ContactPreview>()
+        val borrowedContacts = mutableListOf<ContactPreview>()
+
+        // Iterate properly with destructuring
+        contactSummary.forEach { (key, totalAmount) ->
+            val (contactId, typeId) = key
+
+            // skip null contact ids or non-positive totals
+            if (contactId == null || totalAmount <= 0) return@forEach
+
+            val contact = currentContacts[contactId] ?: return@forEach
+
+            val contactPreview = ContactPreview(
+                id = contactId,
+                name = contact.name,
+                amount = totalAmount
+            )
+
+            when (typeId) {
+                1 -> lentContacts.add(contactPreview)
+                2 -> borrowedContacts.add(contactPreview)
+                else -> {
+                    // unknown type - ignore or log if needed
+                }
+            }
+        }
+
+        return lentContacts.sortedByDescending { it.amount } to
+                borrowedContacts.sortedByDescending { it.amount }
+    }
+*/
 
     private suspend fun loadContacts() {
         contactRepository.getAllContacts()
@@ -119,11 +165,13 @@ class ViewTransactionViewModel @Inject constructor(
 
     fun updateFromQuery(query: String) {
         _uiState.value = _uiState.value.copy(fromQuery = query)
-        applyFiltersToCurrentRecords()
     }
 
     fun updateMoneyToQuery(query: String) {
         _uiState.value = _uiState.value.copy(moneyToQuery = query)
+    }
+
+    fun updateMoneyFilterApplyClicked() {
         applyFiltersToCurrentRecords()
     }
 
@@ -139,7 +187,7 @@ class ViewTransactionViewModel @Inject constructor(
         )
     }
 
-    private fun applyFilters(records: List<com.aspiring_creators.aichopaicho.data.entity.Record>): List<com.aspiring_creators.aichopaicho.data.entity.Record> {
+    private fun applyFilters(records: List<Record>): List<Record> {
         val currentState = _uiState.value
         return records.filter { record ->
             // Filter by completion status
@@ -151,23 +199,12 @@ class ViewTransactionViewModel @Inject constructor(
             }
 
             // Filter by contact name (From query)
-            if (currentState.fromQuery.isNotBlank()) {
-                val contactName = currentState.contacts[record.contactId]?.name ?: ""
-                if (!contactName.contains(currentState.fromQuery, ignoreCase = true)) {
+            if (currentState.fromQuery.isNotBlank() && currentState.moneyToQuery.isNotBlank()) {
+                val amountString = record.amount
+                if ( !(amountString >= uiState.value.fromQuery.toInt()  && amountString <= uiState.value.moneyToQuery.toInt())) {
                     return@filter false
                 }
             }
-
-            // Filter by money to (contact name or amount)
-            if (currentState.moneyToQuery.isNotBlank()) {
-                val contactName = currentState.contacts[record.contactId]?.name ?: ""
-                val amountString = record.amount.toString()
-                if (!contactName.contains(currentState.moneyToQuery, ignoreCase = true) &&
-                    !amountString.contains(currentState.moneyToQuery)) {
-                    return@filter false
-                }
-            }
-
             true
         }
     }
@@ -211,3 +248,12 @@ class ViewTransactionViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(isLoading = value)
     }
 }
+
+// ContactPreview data class
+data class ContactPreview(
+    val id: String,
+    val name: String,
+    val amount: Double
+)
+
+// Updated UI State

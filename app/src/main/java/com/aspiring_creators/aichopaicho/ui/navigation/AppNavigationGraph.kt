@@ -2,20 +2,21 @@ package com.aspiring_creators.aichopaicho.ui.navigation
 
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.aspiring_creators.aichopaicho.ui.screens.AddTransactionScreen
 import com.aspiring_creators.aichopaicho.ui.screens.DashboardScreen
 import com.aspiring_creators.aichopaicho.ui.screens.PermissionScreen
+import com.aspiring_creators.aichopaicho.ui.screens.TransactionDetailScreen
 import com.aspiring_creators.aichopaicho.ui.screens.ViewTransactionScreen
 import com.aspiring_creators.aichopaicho.ui.screens.WelcomeScreen
 import com.aspiring_creators.aichopaicho.viewmodel.AppNavigationViewModel
-import okhttp3.Route
 
 @Composable
 fun AppNavigationGraph(
@@ -92,7 +93,27 @@ fun AppNavigationGraph(
                     onNavigateBack = {
                         navController.popBackStack()
                     },
-                    onNavigateToIndividualRecord = {}
+                    onNavigateToIndividualRecord = {
+                        navController.navigate("${Routes.TRANSACTION_DETAIL_SCREEN}/$it"){
+                            launchSingleTop = true
+                        }
+                    },
+                    onNavigateToContactList ={}
+                )
+            }
+
+            composable(
+                "${Routes.TRANSACTION_DETAIL_SCREEN}/{${Routes.TRANSACTION_ID}}",
+                arguments = listOf(
+                    navArgument(name = Routes.TRANSACTION_ID){type = NavType.StringType}
+                )
+            ){
+                val transactionId = it.arguments?.getString(Routes.TRANSACTION_ID)
+                TransactionDetailScreen(
+                    transactionId = transactionId!!,
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    }
                 )
             }
         }

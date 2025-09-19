@@ -24,7 +24,8 @@ import com.aspiring_creators.aichopaicho.viewmodel.ViewTransactionViewModel
 fun ViewTransactionScreen(
     viewTransactionViewModel: ViewTransactionViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
-    onNavigateToIndividualRecord: (String) -> Unit
+    onNavigateToIndividualRecord: (String) -> Unit,
+    onNavigateToContactList:(String)->Unit
 ) {
     val uiState by viewTransactionViewModel.uiState.collectAsStateWithLifecycle()
 
@@ -64,10 +65,7 @@ fun ViewTransactionScreen(
                     uiState.recordSummary?.let { summary ->
                         NetBalanceCard(
                             summary = summary,
-                            onNavigateToContactList = {  },
-                            lentContacts = emptyList(),
-                            borrowedContacts = emptyList(),
-                            onContactClick = {}
+                            onNavigateToContactList = { },
                         )
                     }
                 }
@@ -81,6 +79,7 @@ fun ViewTransactionScreen(
                         onFromQueryChanged = viewTransactionViewModel::updateFromQuery,
                         moneyToQuery = uiState.moneyToQuery,
                         onMoneyToQueryChanged = viewTransactionViewModel::updateMoneyToQuery,
+                        onMoneyFilterApplyClicked = viewTransactionViewModel::updateMoneyFilterApplyClicked ,
                         showCompleted = uiState.showCompleted,
                         onShowCompletedChanged = viewTransactionViewModel::updateShowCompleted
                     )
@@ -95,10 +94,8 @@ fun ViewTransactionScreen(
                         onCompletionToggle = {
                             viewTransactionViewModel.toggleRecordCompletion(record.id)
                         },
-                        onDeleteRecord = {
-                            viewTransactionViewModel.deleteRecord(record.id)
-                        },
-                        onNavigateToContactList = {}
+                        onDeleteRecord = {},
+                        onNavigateToContactList = {onNavigateToContactList}
                     )
                 }
             }
@@ -111,4 +108,3 @@ fun ViewTransactionScreen(
         }
     }
 }
-

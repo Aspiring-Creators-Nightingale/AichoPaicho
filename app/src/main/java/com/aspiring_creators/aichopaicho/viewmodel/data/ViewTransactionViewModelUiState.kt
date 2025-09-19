@@ -4,6 +4,8 @@ import com.aspiring_creators.aichopaicho.data.entity.Contact
 import com.aspiring_creators.aichopaicho.data.entity.Record
 import com.aspiring_creators.aichopaicho.data.entity.Type
 import com.aspiring_creators.aichopaicho.data.entity.UserRecordSummary
+import com.aspiring_creators.aichopaicho.viewmodel.ContactPreview
+
 
 data class ViewTransactionViewModelUiState(
     val isLoading: Boolean = false,
@@ -17,5 +19,7 @@ data class ViewTransactionViewModelUiState(
     val selectedType: Int? = null,
     val fromQuery: String = "",
     val moneyToQuery: String = "",
-    val showCompleted: Boolean = true
+    val showCompleted: Boolean = true,
+    val lentContacts: List<ContactPreview> = emptyList(),
+    val borrowedContacts: List<ContactPreview> = emptyList()
 )
