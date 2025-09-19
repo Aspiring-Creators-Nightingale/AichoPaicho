@@ -35,7 +35,7 @@ class DashboardScreenViewModel @Inject constructor(
             } else {
                 _uiState.value = _uiState.value.copy(
                     user = null,
-                    errorMessage = "User not signed in"
+                    errorMessage = "Google backup not enabled"
                 )
             }
         }

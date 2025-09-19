@@ -12,8 +12,10 @@ import androidx.navigation.compose.rememberNavController
 import com.aspiring_creators.aichopaicho.ui.screens.AddTransactionScreen
 import com.aspiring_creators.aichopaicho.ui.screens.DashboardScreen
 import com.aspiring_creators.aichopaicho.ui.screens.PermissionScreen
+import com.aspiring_creators.aichopaicho.ui.screens.ViewTransactionScreen
 import com.aspiring_creators.aichopaicho.ui.screens.WelcomeScreen
 import com.aspiring_creators.aichopaicho.viewmodel.AppNavigationViewModel
+import okhttp3.Route
 
 @Composable
 fun AppNavigationGraph(
@@ -68,7 +70,11 @@ fun AppNavigationGraph(
                             launchSingleTop = true
                         }
                     },
-                    onNavigateToViewTransactions = {},
+                    onNavigateToViewTransactions = {
+                        navController.navigate(Routes.VIEW_TRANSACTION_SCREEN){
+                            launchSingleTop = true
+                        }
+                    },
                     onNavigateToSettings = {},
                 )
             }
@@ -78,6 +84,15 @@ fun AppNavigationGraph(
                     onNavigateBack = {
                         navController.popBackStack()
                     }
+                )
+            }
+
+            composable(Routes.VIEW_TRANSACTION_SCREEN){
+                ViewTransactionScreen(
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    },
+                    onNavigateToIndividualRecord = {}
                 )
             }
         }

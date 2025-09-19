@@ -23,16 +23,29 @@ class ContactRepository @Inject constructor(private val contactDao: ContactDao) 
         }
     }
 
-    suspend fun softDelete(id: String, updatedAt: Long) {
-        contactDao.softDelete(id, updatedAt)
-    }
-
-    suspend fun getAllContacts(): Flow<List<Contact>> { // Changed from suspend fun based on typical DAO Flow usage
-        return contactDao.getAllContacts()
-    }
 
      suspend fun getContactByContactId(contactId: String): Contact? {
         return contactDao.getContactByContactId(contactId)
+    }
+
+    fun getAllContacts(): Flow<List<Contact>> {
+        return contactDao.getAllContacts()
+    }
+
+    suspend fun getContactById(contactId: String): Contact? {
+        return contactDao.getContactById(contactId)
+    }
+
+    suspend fun insertContact(contact: Contact) {
+        contactDao.insertContact(contact)
+    }
+
+    suspend fun updateContact(contact: Contact) {
+        contactDao.updateContact(contact)
+    }
+
+    suspend fun deleteContact(contactId: String) {
+        contactDao.deleteContact(contactId)
     }
 
 }

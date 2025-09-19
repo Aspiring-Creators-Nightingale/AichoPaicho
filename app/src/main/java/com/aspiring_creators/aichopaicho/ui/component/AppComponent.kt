@@ -351,7 +351,9 @@ fun LabelComponentView()
 
 object TypeConstants{
     const val TYPE_LENT = "Lent"
+    const val LENT_ID = 1
     const val TYPE_BORROWED = "Borrowed"
+    const val BORROWED_ID = 0
 }
 
 

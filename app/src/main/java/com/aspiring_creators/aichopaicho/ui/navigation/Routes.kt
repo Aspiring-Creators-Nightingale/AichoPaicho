@@ -11,4 +11,5 @@ object Routes {
     const val OFFLINE_INIT_SCREEN = "offline_init_screen"
 
     const val ADD_TRANSACTION_SCREEN = "add_transaction_screen"
+    const val VIEW_TRANSACTION_SCREEN = "view_transaction_screen"
 }

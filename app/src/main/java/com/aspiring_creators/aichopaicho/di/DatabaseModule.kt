@@ -7,6 +7,7 @@ import com.aspiring_creators.aichopaicho.data.dao.ContactDao
 import com.aspiring_creators.aichopaicho.data.dao.RecordDao
 import com.aspiring_creators.aichopaicho.data.dao.TypeDao
 import com.aspiring_creators.aichopaicho.data.dao.UserDao
+import com.aspiring_creators.aichopaicho.data.dao.UserRecordSummaryDao
 import com.aspiring_creators.aichopaicho.data.database.AppDatabase // Import the new AppDatabase
 import com.aspiring_creators.aichopaicho.data.local.ScreenViewDao
 import dagger.Module
@@ -65,4 +66,12 @@ object DatabaseModule {
     fun provideScreenViewDao(appDatabase: AppDatabase): ScreenViewDao {
         return appDatabase.screenViewDao()
     }
+
+    @Provides
+    @Singleton
+    fun provideUserRecordSummaryDao(appDatabase: AppDatabase): UserRecordSummaryDao {
+        return appDatabase.userRecordSummaryDao()
+    }
+
+
 }
