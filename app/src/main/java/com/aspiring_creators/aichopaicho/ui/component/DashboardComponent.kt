@@ -153,7 +153,7 @@ fun DashboardContent(
 ) {
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .padding(16.dp)
     ) {
         // User Card
@@ -161,6 +161,8 @@ fun DashboardContent(
 
 
         Spacer(modifier = Modifier.height(24.dp))
+
+
 
         // Quick Actions
         Text(
@@ -185,6 +187,7 @@ fun DashboardContent(
                     modifier = Modifier.padding(bottom = 8.dp),
                     contentDescription = "Add new Record or Transaction"
                 )
+
             }
             onNavigateToViewTransactions?.let { navigateToViewTransactions ->
                 QuickActionButton(

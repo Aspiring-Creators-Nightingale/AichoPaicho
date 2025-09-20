@@ -153,7 +153,7 @@ class ViewTransactionViewModel @Inject constructor(
     fun updateDateRange(startDate: Long, endDate: Long) {
         _uiState.value = _uiState.value.copy(dateRange = startDate to endDate)
         viewModelScope.launch {
-            loadRecordSummary()
+//            loadRecordSummary()
             loadRecords()
         }
     }

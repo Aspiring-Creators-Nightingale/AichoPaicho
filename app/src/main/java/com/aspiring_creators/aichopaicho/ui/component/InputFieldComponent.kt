@@ -9,12 +9,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -134,7 +141,7 @@ fun AmountInputFieldErorPreview() {
     }
 }
 
-@Composable
+/*@Composable
 fun DateInputField(
     label: String,
     onDateSelected: (Long?) -> Unit,
@@ -183,7 +190,7 @@ fun DateInputField(
     Column(modifier = modifier) {
         OutlinedTextField(
             value = currentDate,
-            onValueChange = { /* No manual text input */ },
+            onValueChange = { *//* No manual text input *//* },
             label = { Text(label) },
             modifier = Modifier
                 .fillMaxWidth()
@@ -198,7 +205,93 @@ fun DateInputField(
             },
         )
     }
+}*/
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DateInputField(
+    label: String,
+    onDateSelected: (Long?) -> Unit,
+    modifier: Modifier = Modifier,
+    initializeWithCurrentDate: Boolean = false,
+    selectedDate: Long?
+) {
+    var showDialog by remember { mutableStateOf(false) }
+
+    val initialDisplayMonthMillis = selectedDate ?: if (initializeWithCurrentDate) System.currentTimeMillis() else null
+
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = selectedDate,
+//        initialDisplayMonthMillis = initialDisplayMonthMillis
+    )
+
+    // Formatted date string for display in the TextField
+    val formattedDateText by remember(selectedDate) {
+        derivedStateOf {
+            selectedDate?.let {
+                val dateFormatter = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
+                dateFormatter.format(Date(it))
+            } ?: ""
+        }
+    }
+
+    LaunchedEffect(initializeWithCurrentDate, selectedDate) {
+        if (initializeWithCurrentDate && selectedDate == null) {
+            val now = System.currentTimeMillis()
+            datePickerState.selectedDateMillis = now
+            onDateSelected(now)
+        }
+    }
+
+
+    Column(modifier = modifier) {
+        OutlinedTextField(
+            value = formattedDateText,
+            onValueChange = { /* Read-only, value changed by picker */ },
+            label = { Text(label) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = { showDialog = true }), // Open dialog on click
+            readOnly = true,
+            trailingIcon = {
+                IconButton(onClick = { showDialog = true }) { // Also open dialog on icon click
+                    Icon(
+                        imageVector = Icons.Filled.DateRange,
+                        contentDescription = "Select Date"
+                    )
+                }
+            },
+        )
+    }
+
+    if (showDialog) {
+        DatePickerDialog(
+            onDismissRequest = { showDialog = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDialog = false
+                        onDateSelected(datePickerState.selectedDateMillis)
+                    }
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showDialog = false }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(
+                state = datePickerState,
+            )
+        }
+    }
 }
+
 
 
 @Preview(showBackground = true, name = "Date Input Field - Empty")

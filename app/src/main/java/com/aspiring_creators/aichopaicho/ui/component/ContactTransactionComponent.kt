@@ -40,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.aspiring_creators.aichopaicho.CurrencyUtils
 import com.aspiring_creators.aichopaicho.R
 import com.aspiring_creators.aichopaicho.data.entity.Contact
 import com.aspiring_creators.aichopaicho.data.entity.Record
@@ -102,7 +103,7 @@ import java.util.Locale
             )
 
             Text(
-                text = stringResource(R.string.npr) + netBalance.toInt(),
+                text =  CurrencyUtils.getCurrencyCode(LocalContext.current) + " " + netBalance.toInt(),
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = when {
@@ -167,6 +168,7 @@ import java.util.Locale
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     color: Color
 ) {
+     val context = LocalContext.current
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
@@ -177,7 +179,7 @@ import java.util.Locale
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = "NPR ${amount.toInt()}",
+                text = "${CurrencyUtils.getCurrencyCode(context)} ${amount.toInt()}",
                 fontWeight = FontWeight.SemiBold,
                 color = color
             )
@@ -286,7 +288,7 @@ fun ContactRecordCard(
     val isLent = type?.name?.lowercase() == "lent"
     val cardColor = if (isLent) Color(0xFF4CAF50) else Color(0xFFF44336)
     val amountPrefix = if (isLent) "+" else "-"
-
+    val context = LocalContext.current
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -294,6 +296,7 @@ fun ContactRecordCard(
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
+
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -316,7 +319,7 @@ fun ContactRecordCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "$amountPrefix NPR ${record.amount}",
+                        text = "$amountPrefix ${CurrencyUtils.getCurrencyCode(context)} ${record.amount}",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
                         color = cardColor,

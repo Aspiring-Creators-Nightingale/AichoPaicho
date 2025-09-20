@@ -35,10 +35,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.aspiring_creators.aichopaicho.CurrencyUtils
 import com.aspiring_creators.aichopaicho.data.entity.Contact
 import com.aspiring_creators.aichopaicho.data.entity.Record
 import com.aspiring_creators.aichopaicho.data.entity.Type
 import java.text.SimpleDateFormat
+import java.util.Currency
 import java.util.Date
 import java.util.Locale
 
@@ -123,7 +125,6 @@ import java.util.Locale
                 value = type?.name ?: "Unknown Type",
                 isEditing = false
             )
-
             // Amount
             if (isEditing) {
                 OutlinedTextField(
@@ -134,12 +135,12 @@ import java.util.Locale
                     },
                     label = { Text("Amount") },
                     modifier = Modifier.fillMaxWidth(),
-                    prefix = { Text("NPR.") }
+                    prefix = { Text(CurrencyUtils.getCurrencyCode(context)) }
                 )
             } else {
                 DetailRow(
                     label = "Amount",
-                    value = "NPR.${record.amount}",
+                    value = "${CurrencyUtils.getCurrencyCode(context)} ${record.amount}",
                     isEditing = false
                 )
             }

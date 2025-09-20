@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.aspiring_creators.aichopaicho.ui.screens.AddTransactionScreen
+import com.aspiring_creators.aichopaicho.ui.screens.ContactListScreen
 import com.aspiring_creators.aichopaicho.ui.screens.ContactTransactionScreen
 import com.aspiring_creators.aichopaicho.ui.screens.DashboardScreen
 import com.aspiring_creators.aichopaicho.ui.screens.PermissionScreen
@@ -78,6 +79,11 @@ fun AppNavigationGraph(
                         }
                     },
                     onNavigateToSettings = {},
+                    onNavigateToContactList = {
+                        navController.navigate("${Routes.CONTACT_LIST_SCREEN}/$it"){
+                            launchSingleTop = true
+                        }
+                    }
                 )
             }
 
@@ -101,6 +107,11 @@ fun AppNavigationGraph(
                     },
                     onNavigateToContactList ={
                         navController.navigate("${Routes.CONTACT_TRANSACTION_SCREEN}/$it"){
+                            launchSingleTop = true
+                        }
+                    },
+                    onNavigateToContact = {
+                        navController.navigate("${Routes.CONTACT_LIST_SCREEN}/"){
                             launchSingleTop = true
                         }
                     }
@@ -140,6 +151,27 @@ fun AppNavigationGraph(
                     }
                 )
             }
+
+            composable(
+                "${Routes.CONTACT_LIST_SCREEN}/{${Routes.CONTACT_LIST_TYPE}}",
+                arguments = listOf(
+                    navArgument(name = Routes.CONTACT_LIST_TYPE){type = NavType.StringType}
+                )
+            ) {
+                val type = it.arguments?.getString(Routes.CONTACT_LIST_TYPE)
+                ContactListScreen(
+                    type = type!!,
+                    onContactClicked = {
+                        navController.navigate("${Routes.CONTACT_TRANSACTION_SCREEN}/$it"){
+                            launchSingleTop = false
+                        }
+                    },
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+
         }
     }
 }

@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.List
+import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -34,6 +35,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -41,6 +43,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.aspiring_creators.aichopaicho.CurrencyUtils
 import com.aspiring_creators.aichopaicho.data.entity.Contact
 import com.aspiring_creators.aichopaicho.data.entity.Record
 import com.aspiring_creators.aichopaicho.data.entity.UserRecordSummary
@@ -55,20 +58,42 @@ import kotlin.Unit
 @Composable
 fun TransactionTopBar(
     onNavigateBack: () -> Unit,
-    dateRange: Pair<Long, Long>,
-    onDateRangeSelected: (Long, Long) -> Unit
+    dateRange: Pair<Long, Long>, // Represents actual current filter (can be MIN/MAX_VALUE)
+    onDateRangeSelected: (Long, Long) -> Unit,
+    onContactsNavigation: () -> Unit // New callback for contacts
 ) {
-
     val dateFormatter = remember { SimpleDateFormat("dd MMM yy", Locale.getDefault()) }
-    val dateRangeText =
-        "${dateFormatter.format(Date(dateRange.first))} – ${dateFormatter.format(Date(dateRange.second))}"
+
+    // Display text: Show "All Time" or specific dates
+    val startDateText = if (dateRange.first == Long.MIN_VALUE) "Start" else dateFormatter.format(Date(dateRange.first))
+    val endDateText = if (dateRange.second == Long.MAX_VALUE) "End" else dateFormatter.format(Date(dateRange.second))
+    val dateRangeText = if (dateRange.first == Long.MIN_VALUE && dateRange.second == Long.MAX_VALUE) {
+        "All Time"
+    } else {
+        "$startDateText – $endDateText"
+    }
 
     var showDatePickerDialog by remember { mutableStateOf(false) }
 
+    val initialPickerStartDateMillis = if (dateRange.first == Long.MIN_VALUE) null else dateRange.first
+    val initialPickerEndDateMillis = if (dateRange.second == Long.MAX_VALUE) null else dateRange.second
+
     val dateRangePickerState = rememberDateRangePickerState(
-        initialSelectedStartDateMillis = if (dateRange.first != Long.MIN_VALUE) dateRange.first else null,
-        initialSelectedEndDateMillis = if (dateRange.second != Long.MAX_VALUE) dateRange.second else null,
+        initialSelectedStartDateMillis = initialPickerStartDateMillis,
+        initialSelectedEndDateMillis = initialPickerEndDateMillis,
     )
+
+    // Effect to update the picker state if the external dateRange changes
+    // AND the dialog is not currently shown.
+    // This handles cases where the dateRange is reset externally (e.g., by another filter).
+    LaunchedEffect(dateRange, showDatePickerDialog) {
+        if (!showDatePickerDialog) {
+            dateRangePickerState.setSelection(
+                startDateMillis = if (dateRange.first == Long.MIN_VALUE) null else dateRange.first,
+                endDateMillis = if (dateRange.second == Long.MAX_VALUE) null else dateRange.second
+            )
+        }
+    }
 
 
     TopAppBar(
@@ -79,9 +104,10 @@ fun TransactionTopBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Button(
-                    onClick = {  showDatePickerDialog = true },
+                    onClick = { showDatePickerDialog = true },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                     ),
                     shape = RoundedCornerShape(20.dp)
                 ) {
@@ -108,43 +134,127 @@ fun TransactionTopBar(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back"
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
+        actions = {
+            TextButton(onClick = {
+                onDateRangeSelected(Long.MIN_VALUE, Long.MAX_VALUE)
+            }) {
+                Text("Clear", style = MaterialTheme.typography.bodySmall)
+            }
+
+            IconButton(onClick = onContactsNavigation) {
+                Icon(
+                    imageVector = Icons.Default.AccountBox, // Example icon
+                    contentDescription = "View Contacts",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant // Adjust tint as needed
                 )
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Transparent
+            containerColor = Color.Transparent, // Your existing preference
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+            actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant // Customize as needed
         )
     )
+
     if (showDatePickerDialog) {
+        val dialogColors = DatePickerDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.surfaceDim, // Example: slightly dimmer surface
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            headlineContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            weekdayContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            dayContentColor = MaterialTheme.colorScheme.onSurface, // Color for dates
+            disabledDayContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+            selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
+            disabledSelectedDayContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
+            selectedDayContainerColor = MaterialTheme.colorScheme.primary,
+            disabledSelectedDayContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+            todayContentColor = MaterialTheme.colorScheme.primary,
+            todayDateBorderColor = MaterialTheme.colorScheme.primary,
+            dayInSelectionRangeContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            dayInSelectionRangeContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f) // More subtle highlight
+        )
+
         DatePickerDialog(
             onDismissRequest = { showDatePickerDialog = false },
             confirmButton = {
                 TextButton(
                     onClick = {
                         showDatePickerDialog = false
-                        val startDate = dateRangePickerState.selectedStartDateMillis
-                        val endDate = dateRangePickerState.selectedEndDateMillis
-                        if (startDate != null && endDate != null) {
-                            onDateRangeSelected(startDate, endDate)
+                        // If picker's selection is null, use MIN_VALUE, else use selected value
+                        val selectedStart = dateRangePickerState.selectedStartDateMillis ?: Long.MIN_VALUE
+                        // If picker's selection is null, use MAX_VALUE, else use selected value
+                        val selectedEnd = dateRangePickerState.selectedEndDateMillis ?: Long.MAX_VALUE
+
+                        // Ensure start is before end if both are actual dates (not MIN/MAX)
+                        if (selectedStart != Long.MIN_VALUE && selectedEnd != Long.MAX_VALUE && selectedStart > selectedEnd) {
+                            // Option 1: Swap them (common UX)
+                            onDateRangeSelected(selectedEnd, selectedStart)
+                            // Option 2: Or call with original selection and let ViewModel handle/show error
+                            // onDateRangeSelected(selectedStart, selectedEnd)
+                        } else {
+                            onDateRangeSelected(selectedStart, selectedEnd)
                         }
-                    }
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text("OK")
                 }
             },
             dismissButton = {
                 TextButton(
-                    onClick = { showDatePickerDialog = false }
+                    onClick = { showDatePickerDialog = false },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary)
                 ) {
                     Text("Cancel")
                 }
-            }
+            },
+
+            colors = dialogColors // Apply custom dialog colors
         ) {
-            // The DateRangePicker composable itself
-            DateRangePicker(state = dateRangePickerState)
+            DateRangePicker(
+                state = dateRangePickerState,
+                // You can also customize DateRangePicker colors if needed,
+                // often the dialog colors are enough.
+                // colors = DatePickerDefaults.colors(...)
+                title = {
+                    Text(
+                        text = "Select Date Range",
+                        modifier = Modifier.padding(start = 24.dp, end = 12.dp, top = 16.dp, bottom = 12.dp),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                },
+                headline = { // Displays the selected range within the picker
+                    Text(
+                        text = formatDatePickerHeadline(
+                            dateRangePickerState.selectedStartDateMillis,
+                            dateRangePickerState.selectedEndDateMillis,
+                            dateFormatter
+                        ),
+                        modifier = Modifier.padding(start = 24.dp, end = 12.dp, top = 0.dp, bottom = 20.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                showModeToggle = true // Allow switching between calendar and input mode
+            )
         }
     }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+private fun formatDatePickerHeadline(
+    startMillis: Long?,
+    endMillis: Long?,
+    dateFormatter: SimpleDateFormat
+): String {
+    val startStr = startMillis?.let { dateFormatter.format(Date(it)) } ?: "Start Date"
+    val endStr = endMillis?.let { dateFormatter.format(Date(it)) } ?: "End Date"
+    return "$startStr - $endStr"
 }
 
 @Preview(showBackground = true)
@@ -153,7 +263,8 @@ fun TopBarPreview() {
 TransactionTopBar(
     onNavigateBack = {},
     dateRange = System.currentTimeMillis() - 122323 to System.currentTimeMillis(),
-    onDateRangeSelected = { _, _ -> }
+    onDateRangeSelected = { _, _ -> },
+    onContactsNavigation = {}
 )
 }
 
@@ -166,7 +277,7 @@ fun NetBalanceCard(
     onContactClick: (String) -> Unit = { id -> onNavigateToContactList(id) }
 ) {
     var expanded by remember { mutableStateOf(false) }
-
+    val context = LocalContext.current
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -197,7 +308,7 @@ fun NetBalanceCard(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        "NPR ${summary.netTotal.toInt()}",
+                        "${CurrencyUtils.getCurrencyCode(context)} ${summary.netTotal.toInt()}",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
                         color = if (summary.netTotal >= 0)
@@ -290,6 +401,7 @@ private fun BalanceMiniItem(label: String, amount: Double, isPositive: Boolean) 
         MaterialTheme.colorScheme.primary
     else
         MaterialTheme.colorScheme.error
+    val context = LocalContext.current
 
     Column(horizontalAlignment = Alignment.End) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -301,7 +413,7 @@ private fun BalanceMiniItem(label: String, amount: Double, isPositive: Boolean) 
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = "NPR ${amount.toInt()}",
+                text = "${CurrencyUtils.getCurrencyCode(context)} ${amount.toInt()}",
                 style = MaterialTheme.typography.bodySmall.copy(
                     fontWeight = FontWeight.SemiBold
                 ),
@@ -327,6 +439,7 @@ fun BalanceItemExtended(
         MaterialTheme.colorScheme.primary
     else
         MaterialTheme.colorScheme.error
+    val context = LocalContext.current
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -355,7 +468,7 @@ fun BalanceItemExtended(
 
         // Amount
         Text(
-            text = "NPR ${amount.toInt()}",
+            text = "${CurrencyUtils.getCurrencyCode(context)} ${amount.toInt()}",
             style = MaterialTheme.typography.titleMedium.copy(
                 fontWeight = FontWeight.Bold
             ),
@@ -408,6 +521,7 @@ fun ContactChip(
     onClick: () -> Unit,
     tintColor: Color = MaterialTheme.colorScheme.primary
 ) {
+    val context = LocalContext.current
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(20.dp),
@@ -449,7 +563,7 @@ fun ContactChip(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = "NPR ${contact.amount.toInt()}",
+                    text = "${CurrencyUtils.getCurrencyCode(context)} ${contact.amount.toInt()}",
                     style = MaterialTheme.typography.labelSmall,
                     color = tintColor
                 )
@@ -590,14 +704,14 @@ fun TransactionFilterSection(
                         )
 
                         // small clear button
-                        TextButton(onClick = {
-                            onTypeSelected(null)
-                            onFromQueryChanged("")
-                            onMoneyToQueryChanged("")
-                            onShowCompletedChanged(false)
-                        }) {
-                            Text("Clear", style = MaterialTheme.typography.bodySmall)
-                        }
+                            TextButton(onClick = {
+                                onTypeSelected(null)
+                                onFromQueryChanged("")
+                                onMoneyToQueryChanged("")
+                                onShowCompletedChanged(false)
+                            }) {
+                                Text("Clear", style = MaterialTheme.typography.bodySmall)
+                            }
                     }
 
                     // Amount + From fields arranged compactly
@@ -615,9 +729,9 @@ fun TransactionFilterSection(
                         OutlinedTextField(
                             value = moneyToQuery,
                             onValueChange = onMoneyToQueryChanged,
-                            label = { Text("Max Amount") },
+                            label = { Text("To") },
                             singleLine = true,
-                            modifier = Modifier.width(120.dp)
+                            modifier = Modifier.weight(1f)
                         )
                         // Apply button
                         FilledTonalButton(
@@ -742,7 +856,7 @@ fun TransactionCard(
 
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = "${if (isLent) "+" else "-"} NPR.${record.amount}",
+                    text = "${if (isLent) "+" else "-"} ${CurrencyUtils.getCurrencyCode(LocalContext.current)}.${record.amount}",
                     fontWeight = FontWeight.Bold,
                     color = accent,
                     textDecoration = if (record.isComplete) TextDecoration.LineThrough else TextDecoration.None

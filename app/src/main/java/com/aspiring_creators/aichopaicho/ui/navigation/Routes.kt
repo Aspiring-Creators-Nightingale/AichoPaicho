@@ -5,6 +5,9 @@ object Routes {
     const val TRANSACTION_ID = "transactionId"
     const val CONTACT_ID = "contactId"
 
+    const val CONTACT_LIST_TYPE = "contactListType"
+
+    const val CONTACT_LIST_SCREEN = "contact_list_screen"
 
     const val WELCOME_SCREEN = "welcome_screen"
 

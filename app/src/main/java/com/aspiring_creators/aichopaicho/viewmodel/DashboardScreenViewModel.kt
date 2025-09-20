@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aspiring_creators.aichopaicho.data.entity.User
+import com.aspiring_creators.aichopaicho.data.repository.UserRecordSummaryRepository
 import com.aspiring_creators.aichopaicho.data.repository.UserRepository
 import com.aspiring_creators.aichopaicho.viewmodel.data.DashboardScreenUiState
 import com.google.firebase.auth.FirebaseAuth
@@ -11,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,7 +21,8 @@ import javax.inject.Inject
 @HiltViewModel
 class DashboardScreenViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val firebaseAuth: FirebaseAuth
+    private val firebaseAuth: FirebaseAuth,
+    private val userRecordSummaryRepository: UserRecordSummaryRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardScreenUiState())
@@ -44,6 +47,10 @@ class DashboardScreenViewModel @Inject constructor(
     init {
        loadUserData()
         firebaseAuth.addAuthStateListener(authStateListener)
+
+        viewModelScope.launch {
+            loadRecordSummary()
+        }
     }
 
     override fun onCleared() {
@@ -57,6 +64,14 @@ class DashboardScreenViewModel @Inject constructor(
 
     private fun setErrorMessage(value: String?) {
         _uiState.value = _uiState.value.copy(errorMessage = value)
+    }
+
+    private suspend fun loadRecordSummary() {
+        userRecordSummaryRepository.getCurrentUserSummary()
+            .catch { e -> setErrorMessage("Failed to load summary: ${e.message}") }
+            .collect { summary ->
+                _uiState.value = _uiState.value.copy(recordSummary = summary)
+            }
     }
 
     private fun loadUserData() {
