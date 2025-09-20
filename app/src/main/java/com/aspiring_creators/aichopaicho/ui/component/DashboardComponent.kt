@@ -5,7 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.FlowRow // Keep FlowRow if already used
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -30,18 +32,24 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.request.error
 import coil3.request.placeholder
+import coil3.toUri
+// import coil3.request.error // Already imported via ImageRequest.Builder
+// import coil3.request.placeholder // Already imported via ImageRequest.Builder
 import com.aspiring_creators.aichopaicho.R
+import com.aspiring_creators.aichopaicho.data.entity.User
+import com.aspiring_creators.aichopaicho.ui.theme.AichoPaichoTheme // Added for previews
 import com.aspiring_creators.aichopaicho.viewmodel.data.DashboardScreenUiState
 
 @Composable
 fun UserProfileImage(
-    photoUrl: String,
+    photoUrl: String?, // Made nullable to handle potential null from user?.photoUrl
     userName: String?,
     modifier: Modifier = Modifier
 ) {
@@ -53,10 +61,10 @@ fun UserProfileImage(
     ) {
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(photoUrl)
+                .data(photoUrl ?: R.drawable.placeholder_user_profile) // Fallback if URL is null
                 .crossfade(true)
-                .placeholder(R.drawable.placeholder_user_profile) // Add placeholder
-                .error(R.drawable.placeholder_user_profile_error) // Add error fallback
+                .placeholder(R.drawable.placeholder_user_profile)
+                .error(R.drawable.placeholder_user_profile_error)
                 .build(),
             contentDescription = "Profile photo of ${userName ?: "user"}",
             contentScale = ContentScale.Crop,
@@ -68,23 +76,17 @@ fun UserProfileImage(
                     is AsyncImagePainter.State.Loading -> {
                         Log.d("UserProfileImage", "Loading image: $photoUrl")
                     }
-
                     is AsyncImagePainter.State.Error -> {
-                        // This is the crucial part for error logging
                         Log.e(
                             "UserProfileImage",
                             "Error loading image: $photoUrl",
                             state.result.throwable
                         )
-                        // state.result.throwable will contain the actual CoilException or underlying cause
                     }
-
                     is AsyncImagePainter.State.Success -> {
                         Log.d("UserProfileImage", "Successfully loaded image: $photoUrl")
                     }
-
                     else -> {
-                        // Log other states if needed, though Empty is common before loading starts
                         Log.i("UserProfileImage", "Image state: $state for url: $photoUrl")
                     }
                 }
@@ -93,15 +95,17 @@ fun UserProfileImage(
     }
 }
 
-@Preview()
+@Preview(showBackground = true)
 @Composable
 fun UserProfileImagePreview() {
-    UserProfileImage(
-        "https://images.pexels.com/photos/326055/pexels-photo-326055.jpeg",
-        "Goodness", Modifier
-    )
+    AichoPaichoTheme {
+        UserProfileImage(
+            photoUrl = "https://example.com/image.jpg", // Use a placeholder or ensure network for actual URL
+            userName = "Goodness",
+            modifier = Modifier.size(64.dp)
+        )
+    }
 }
-
 
 @Composable
 fun ErrorContent(
@@ -109,24 +113,26 @@ fun ErrorContent(
     onRetry: () -> Unit
 ) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp), // Added padding
         contentAlignment = Alignment.Center
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center // Center content
         ) {
             TextComponent(
                 value = "Error: $errorMessage",
-                textSize = 25.sp,
-                textColor = R.color.error
+                textSize = 18.sp, // Adjusted size
+                color = MaterialTheme.colorScheme.error // Use theme error color
             )
-
             Spacer(modifier = Modifier.height(16.dp))
-
             ButtonComponent(
-                logo = R.drawable.logo_skip,
+                vectorLogo = Icons.Default.Refresh,
                 text = "Retry",
-                onClick = onRetry
+                onClick = onRetry,
+                modifier = Modifier.fillMaxWidth(0.6f) // Control width
             )
         }
     }
@@ -135,10 +141,12 @@ fun ErrorContent(
 @Preview(showBackground = true)
 @Composable
 fun ErrorContentPreview() {
-    ErrorContent(
-        errorMessage = "An error occurred",
-        onRetry = {}
-    )
+    AichoPaichoTheme {
+        ErrorContent(
+            errorMessage = "A network error occurred.",
+            onRetry = {}
+        )
+    }
 }
 
 @Composable
@@ -151,79 +159,73 @@ fun DashboardContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            // .padding(16.dp) // Padding applied by LazyColumn in DashboardScreen
     ) {
-        // User Card
-        UserDashboardToast(uiState)
-
+        UserDashboardToast(uiState) // This is the user card
 
         Spacer(modifier = Modifier.height(24.dp))
 
-
-
-        // Quick Actions
         Text(
             text = "Quick Actions",
-            style = MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.titleLarge, // Using titleLarge for section header
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 8.dp, start = 8.dp, end = 8.dp) // Adjusted padding
         )
 
         FlowRow(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+                .padding(horizontal = 8.dp), // Padding for FlowRow content
+            horizontalArrangement = Arrangement.spacedBy(12.dp), // Increased spacing
+            verticalArrangement = Arrangement.spacedBy(12.dp), // Increased spacing
         ) {
-
-            onNavigateToAddTransaction?.let { navigateToAddTransaction ->
+            onNavigateToAddTransaction?.let { navigate ->
                 QuickActionButton(
-                    text = "New \n Transaction",
-                    onClick = navigateToAddTransaction,
-                    modifier = Modifier.padding(bottom = 8.dp),
+                    text = "New Txn", // Shorter text
+                    onClick = navigate,
                     contentDescription = "Add new Record or Transaction"
                 )
-
             }
-            onNavigateToViewTransactions?.let { navigateToViewTransactions ->
+            onNavigateToViewTransactions?.let { navigate ->
                 QuickActionButton(
-                    text = "View \n Transactions",
-                    onClick = navigateToViewTransactions,
-                    modifier = Modifier.padding(bottom = 8.dp),
+                    text = "View Txns", // Shorter text
+                    onClick = navigate,
                     contentDescription = "View Transactions"
                 )
             }
-            onNavigateToSettings?.let { navigateToSettings ->
+            onNavigateToSettings?.let { navigate ->
                 QuickActionButton(
                     text = "Settings",
-                    onClick =  navigateToSettings ,
-                    modifier = Modifier.padding(bottom = 8.dp),
+                    onClick = navigate,
                     contentDescription = "Settings"
                 )
             }
         }
 
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Error message display
+        // Error message display (if any, specific to DashboardContent's operations, not general screen errors)
         uiState.errorMessage?.let { error ->
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = error,
                 color = MaterialTheme.colorScheme.error,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
             )
         }
     }
 }
 
 @Composable
-fun UserDashboardToast(uiState: DashboardScreenUiState) {
+fun UserDashboardToast(uiState: DashboardScreenUiState) { // Renamed Preview to avoid conflict
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp), // Slightly reduced elevation
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant, // Use surfaceVariant
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant // Use onSurfaceVariant
+        )
     ) {
         Row(
             modifier = Modifier
@@ -234,19 +236,16 @@ fun UserDashboardToast(uiState: DashboardScreenUiState) {
             UserProfileImage(
                 photoUrl = uiState.user?.photoUrl.toString(),
                 userName = uiState.user?.name,
-                modifier = Modifier.size(64.dp)
+                modifier = Modifier.size(56.dp) // Adjusted size
             )
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // User Info
-            Column(
-                modifier = Modifier
-            ) {
+            Column {
                 Text(
                     text = "Welcome back!",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Normal
+                    style = MaterialTheme.typography.titleMedium
+                    // Color will be inherited from Card's contentColor (onSurfaceVariant)
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -255,15 +254,15 @@ fun UserDashboardToast(uiState: DashboardScreenUiState) {
                     text = uiState.user?.name ?: "User",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary // Explicit primary color for name
                 )
 
                 uiState.user?.email?.let { email ->
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = email,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall, // Slightly smaller for email
+                        // color = MaterialTheme.colorScheme.onSurfaceVariant (inherited)
                         maxLines = 1
                     )
                 }
@@ -274,11 +273,38 @@ fun UserDashboardToast(uiState: DashboardScreenUiState) {
 
 @Preview(showBackground = true)
 @Composable
-fun DashboardScreenPreview() {
-    DashboardContent(
-        uiState = DashboardScreenUiState(),
-        onNavigateToAddTransaction = {},
-        onNavigateToViewTransactions = {},
-        onNavigateToSettings = {}
-    )
+fun UserDashboardToastPreview() { // Renamed from DashboardScreenPreview to be specific
+    AichoPaichoTheme {
+        UserDashboardToast(
+            uiState = DashboardScreenUiState(
+                user = User( // Mock user data
+                    name = "Alex Doe",
+                    email = "alex.doe@example.com",
+                    photoUrl = " ".toUri() ,
+                    id = "df"
+                )
+            )
+        )
+    }
 }
+
+@Preview(showBackground = true)
+@Composable
+fun DashboardContentPreview() { // Specific preview for DashboardContent
+    AichoPaichoTheme {
+        DashboardContent(
+            uiState = DashboardScreenUiState(
+                user =User(
+                    name = "Jane Doe",
+                    email = "jane.doe@example.com",
+                    photoUrl = "".toUri(),
+                    id = "df"
+                )
+            ),
+            onNavigateToAddTransaction = {},
+            onNavigateToViewTransactions = {},
+            onNavigateToSettings = {}
+        )
+    }
+}
+

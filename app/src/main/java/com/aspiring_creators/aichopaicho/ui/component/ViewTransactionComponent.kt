@@ -47,6 +47,7 @@ import com.aspiring_creators.aichopaicho.CurrencyUtils
 import com.aspiring_creators.aichopaicho.data.entity.Contact
 import com.aspiring_creators.aichopaicho.data.entity.Record
 import com.aspiring_creators.aichopaicho.data.entity.UserRecordSummary
+import com.aspiring_creators.aichopaicho.ui.theme.AichoPaichoTheme // Added for preview
 import com.aspiring_creators.aichopaicho.viewmodel.ContactPreview
 import java.text.SimpleDateFormat
 import java.util.*
@@ -281,7 +282,7 @@ fun NetBalanceCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 6.dp) // Keep padding from DashboardScreen in mind
             .animateContentSize(
                 animationSpec = spring(
                     dampingRatio = Spring.DampingRatioMediumBouncy,
@@ -289,32 +290,36 @@ fun NetBalanceCard(
                 )
             ),
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp), // Slightly less elevation than before
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant, // Themed container
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant // Themed content
+        )
     ) {
         Column {
-            // Header area: clickable toggles expand state
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { expanded = !expanded }
-                    .padding(20.dp),
+                    .padding(5.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column {
                     Text(
                         "Net Balance",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        style = MaterialTheme.typography.titleMedium
+                        // Color from Card's contentColor
                     )
                     Text(
                         "${CurrencyUtils.getCurrencyCode(context)} ${summary.netTotal.toInt()}",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
-                        color = if (summary.netTotal >= 0)
+                        color = if (summary.netTotal >= 0) {
                             MaterialTheme.colorScheme.primary
-                        else
+                        } else {
                             MaterialTheme.colorScheme.error
+                        }
                     )
                 }
 
@@ -326,12 +331,11 @@ fun NetBalanceCard(
                     Icon(
                         imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                         contentDescription = if (expanded) "Collapse" else "Expand",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant // Keep as is, good contrast
                     )
                 }
             }
 
-            // Extended area with smooth animation
             AnimatedVisibility(
                 visible = expanded,
                 enter = expandVertically(
@@ -352,11 +356,12 @@ fun NetBalanceCard(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 16.dp, end = 16.dp, bottom = 20.dp, top = 4.dp)
+                        .padding(start = 8.dp, end = 8.dp, bottom = 10.dp, top = 2.dp)
                 ) {
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
-                        thickness = DividerDefaults.Thickness, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                        thickness = DividerDefaults.Thickness,
+                        color = MaterialTheme.colorScheme.outlineVariant // Themed divider
                     )
 
                     Row(
@@ -397,10 +402,11 @@ fun NetBalanceCard(
 
 @Composable
 private fun BalanceMiniItem(label: String, amount: Double, isPositive: Boolean) {
-    val tint = if (isPositive)
+    val tint = if (isPositive) {
         MaterialTheme.colorScheme.primary
-    else
+    } else {
         MaterialTheme.colorScheme.error
+    }
     val context = LocalContext.current
 
     Column(horizontalAlignment = Alignment.End) {
@@ -435,17 +441,15 @@ fun BalanceItemExtended(
     onContactClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val tint = if (isPositive)
-        MaterialTheme.colorScheme.primary
-    else
-        MaterialTheme.colorScheme.error
+    val amountColor = if (isPositive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+    val buttonContainerColor = if (isPositive) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer
+    val buttonContentColor = if (isPositive) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
     val context = LocalContext.current
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
     ) {
-        // Header with icon and label
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
@@ -453,52 +457,50 @@ fun BalanceItemExtended(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = tint,
-                modifier = Modifier.size(18.dp)
+                tint = amountColor, // Match amount color
+                modifier = Modifier.size(6.dp)
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant // Good for secondary info
             )
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Amount
         Text(
             text = "${CurrencyUtils.getCurrencyCode(context)} ${amount.toInt()}",
             style = MaterialTheme.typography.titleMedium.copy(
                 fontWeight = FontWeight.Bold
             ),
-            color = tint
+            color = amountColor
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Navigation button
-        FilledTonalButton(
+        FilledTonalButton( // Using FilledTonalButton for less emphasis than FilledButton
             onClick = onNavigateToContactList,
             shape = RoundedCornerShape(20.dp),
             modifier = Modifier
-                .height(36.dp)
+                .height(50.dp)
                 .fillMaxWidth(),
             colors = ButtonDefaults.filledTonalButtonColors(
-                containerColor = tint.copy(alpha = 0.1f),
-                contentColor = tint
+                containerColor = buttonContainerColor,
+                contentColor = buttonContentColor
             )
         ) {
             Text(
-                text = if (isPositive)
+                text = if (isPositive) {
                     "Lent to $count ${if (count == 1) "person" else "people"}"
-                else
-                    "Borrowed from $count ${if (count == 1) "person" else "people"}",
+                } else {
+                    "Borrowed from $count ${if (count == 1) "person" else "people"}"
+                },
                 style = MaterialTheme.typography.labelMedium
             )
         }
 
-        // Contact chips - horizontal scrolling list
         if (contacts.isNotEmpty()) {
             Spacer(modifier = Modifier.height(12.dp))
             LazyRow(
@@ -508,7 +510,15 @@ fun BalanceItemExtended(
             ) {
                 items(contacts.size) { idx ->
                     val c = contacts[idx]
-                    ContactChip(contact = c, onClick = { onContactClick(c.id) })
+                    ContactChip(
+                        contact = c,
+                        onClick = { onContactClick(c.id) },
+                        // Use tertiary for contact chips to differentiate from primary/error actions
+                        baseColor = MaterialTheme.colorScheme.tertiary,
+                        onBaseColor = MaterialTheme.colorScheme.onTertiary,
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        onContainerColor = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
                 }
             }
         }
@@ -519,33 +529,36 @@ fun BalanceItemExtended(
 fun ContactChip(
     contact: ContactPreview,
     onClick: () -> Unit,
-    tintColor: Color = MaterialTheme.colorScheme.primary
+    baseColor: Color = MaterialTheme.colorScheme.primary, // Generic base for amount text
+    onBaseColor: Color = MaterialTheme.colorScheme.onPrimary, // Text on baseColor (not used here)
+    containerColor: Color = MaterialTheme.colorScheme.primaryContainer, // Container for avatar
+    onContainerColor: Color = MaterialTheme.colorScheme.onPrimaryContainer // Text in avatar
 ) {
     val context = LocalContext.current
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 2.dp,
+        color = MaterialTheme.colorScheme.secondaryContainer, // Overall chip container
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer, // Text on chip container
+        tonalElevation = 1.dp, // Subtle elevation
         modifier = Modifier.wrapContentWidth()
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp), // Adjusted padding
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Circular avatar with initial
-            Surface(
+            Surface( // Avatar
                 shape = CircleShape,
-                color = tintColor.copy(alpha = 0.1f),
-                modifier = Modifier.size(32.dp)
+                color = containerColor, // Use tertiaryContainer for avatar background
+                modifier = Modifier.size(30.dp) // Adjusted size
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Text(
                         text = contact.name.take(1).uppercase(),
-                        style = MaterialTheme.typography.labelMedium.copy(
+                        style = MaterialTheme.typography.labelSmall.copy( // Smaller for avatar
                             fontWeight = FontWeight.Bold
                         ),
-                        color = tintColor
+                        color = onContainerColor // Use onTertiaryContainer for avatar text
                     )
                 }
             }
@@ -558,19 +571,20 @@ fun ContactChip(
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontWeight = FontWeight.Medium
                     ),
-                    color = MaterialTheme.colorScheme.onSurface,
+                    // color will be MaterialTheme.colorScheme.onSecondaryContainer (inherited)
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
                     text = "${CurrencyUtils.getCurrencyCode(context)} ${contact.amount.toInt()}",
                     style = MaterialTheme.typography.labelSmall,
-                    color = tintColor
+                    color = baseColor // Use tertiary for amount text to match avatar theme
                 )
             }
         }
     }
 }
+
 
 /* ----- Data Classes and Preview ----- */
 
@@ -589,14 +603,14 @@ fun NetBalanceCardPreview() {
         ContactPreview("b2", "Maya Thapa", 1022.0)
     )
 
-    MaterialTheme {
-        Surface {
+    AichoPaichoTheme { // Wrapped in theme
+        Surface(color = MaterialTheme.colorScheme.background) { // Added Surface for better preview context
             NetBalanceCard(
                 summary = summary,
-                onNavigateToContactList = { type -> /* navigate to screen with filter type */ },
+                onNavigateToContactList = { /* type -> navigate */ },
                 lentContacts = lent,
                 borrowedContacts = borrowed,
-                onContactClick = { id -> /* navigate to contact detail */ }
+                onContactClick = { /* id -> navigate */ }
             )
         }
     }
