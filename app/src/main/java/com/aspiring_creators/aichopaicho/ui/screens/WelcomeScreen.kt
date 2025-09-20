@@ -40,6 +40,7 @@ import com.aspiring_creators.aichopaicho.ui.component.LogoTopBar
 import com.aspiring_creators.aichopaicho.ui.component.TextComponent
 import com.aspiring_creators.aichopaicho.viewmodel.WelcomeViewModel
 import kotlinx.coroutines.launch
+import kotlin.math.log
 
 
 @Composable
@@ -109,8 +110,8 @@ fun WelcomeScreen(
 
             // Google Sign In Button
             ButtonComponent(
-                R.drawable.logo_google,
-                "Sign in with Google",
+                logo =  R.drawable.logo_google,
+                text = "Sign in with Google",
                 onClick = {
                     scope.launch {
                         val result = welcomeViewModel.signInWithGoogle(activity, false)
@@ -126,8 +127,8 @@ fun WelcomeScreen(
 
             // Skip Button
             ButtonComponent(
-                R.drawable.logo_skip,
-                "Skip for Now",
+                logo = R.drawable.logo_skip,
+               text = "Skip for Now",
                 onClick = {
                     scope.launch {
                         val result = welcomeViewModel.skipSignIn()

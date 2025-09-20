@@ -1,6 +1,8 @@
 package com.aspiring_creators.aichopaicho
 
+import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -14,6 +16,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import com.aspiring_creators.aichopaicho.data.BackgroundSyncWorker
 import com.aspiring_creators.aichopaicho.ui.navigation.AppNavigationGraph
 import com.aspiring_creators.aichopaicho.ui.theme.AichoPaichoTheme
 import com.aspiring_creators.aichopaicho.viewmodel.WelcomeViewModel
@@ -24,6 +30,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        BackgroundSyncWorker.schedulePeriodicSync(applicationContext)
         setContent {
             AichoPaichoTheme {
              AichoPaicho()
@@ -31,6 +38,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
 
 @Composable
 fun AichoPaicho(

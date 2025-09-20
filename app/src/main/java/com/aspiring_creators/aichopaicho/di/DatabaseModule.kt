@@ -2,10 +2,12 @@ package com.aspiring_creators.aichopaicho.di
 
 import android.content.Context
 import androidx.room.Room
+import com.aspiring_creators.aichopaicho.data.AppDatabaseCallback
 import com.aspiring_creators.aichopaicho.data.dao.ContactDao
 import com.aspiring_creators.aichopaicho.data.dao.RecordDao
 import com.aspiring_creators.aichopaicho.data.dao.TypeDao
 import com.aspiring_creators.aichopaicho.data.dao.UserDao
+import com.aspiring_creators.aichopaicho.data.dao.UserRecordSummaryDao
 import com.aspiring_creators.aichopaicho.data.database.AppDatabase // Import the new AppDatabase
 import com.aspiring_creators.aichopaicho.data.local.ScreenViewDao
 import dagger.Module
@@ -13,6 +15,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Provider
 import javax.inject.Singleton
 
 @Module
@@ -21,12 +24,16 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideAppDatabase(@ApplicationContext appContext: Context): AppDatabase {
+    fun provideAppDatabase(
+        @ApplicationContext appContext: Context,
+        typeDaoProvider: Provider<TypeDao>
+    ): AppDatabase {
         return Room.databaseBuilder(
                 appContext,
                 AppDatabase::class.java,
                 "aichopaicho_app_database"
-            ).fallbackToDestructiveMigration(false) // review
+            ).fallbackToDestructiveMigration(true) // review
+            .addCallback(AppDatabaseCallback(typeDaoProvider))
          .build()
     }
 
@@ -59,4 +66,12 @@ object DatabaseModule {
     fun provideScreenViewDao(appDatabase: AppDatabase): ScreenViewDao {
         return appDatabase.screenViewDao()
     }
+
+    @Provides
+    @Singleton
+    fun provideUserRecordSummaryDao(appDatabase: AppDatabase): UserRecordSummaryDao {
+        return appDatabase.userRecordSummaryDao()
+    }
+
+
 }

@@ -16,7 +16,12 @@ class UserRepository @Inject constructor(private val userDao: UserDao) {
         userDao.softDelete(id, updatedAt)
     }
 
-    suspend fun getUser(id: String): User? {
-        return userDao.getUser(id)
+    suspend fun getUser(): User {
+        return userDao.getUser()
     }
+
+    suspend fun deleteUserCompletely(userId: String) {
+        userDao.deleteUserCompletely(userId)
+    }
+
 }

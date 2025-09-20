@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "types")
 data class Type(
-    @PrimaryKey(autoGenerate = true) val id: Int,
+    @PrimaryKey val id: Int ,
     val name: String,
     val isDeleted: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
