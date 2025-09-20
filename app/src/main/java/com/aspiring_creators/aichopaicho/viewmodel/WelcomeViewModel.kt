@@ -113,7 +113,7 @@ class WelcomeViewModel @Inject constructor(
             }
 
             screenViewRepository.markScreenAsShown(Routes.WELCOME_SCREEN)
-            BackgroundSyncWorker.scheduleOneTimeSyncOnLogin(activity)
+            BackgroundSyncWorker.scheduleOneTimeSyncOnLogin(activity.applicationContext)
 
             Result.success(user!!)
 

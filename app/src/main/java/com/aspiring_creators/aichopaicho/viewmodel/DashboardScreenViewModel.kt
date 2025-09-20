@@ -80,7 +80,7 @@ class DashboardScreenViewModel @Inject constructor(
             }
     }
 
-    private fun loadUserData() {
+     fun loadUserData() {
         viewModelScope.launch {
             try {
                 setLoading(true)
@@ -102,29 +102,6 @@ class DashboardScreenViewModel @Inject constructor(
         }
     }
 
-    suspend fun signOut(): Result<Unit> {
-        return try {
-            setLoading(true)
-            setErrorMessage(null)
-
-            firebaseAuth.signOut()
-            _uiState.value = DashboardScreenUiState() // Reset to initial state
-
-            Log.d("DashboardViewModel", "User signed out successfully")
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e("DashboardViewModel", "Error signing out", e)
-            setErrorMessage("Failed to sign out: ${e.message}")
-            Result.failure(e)
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    fun RunTestBackgroundWorker(){
-        val workRequest = OneTimeWorkRequestBuilder<BackgroundSyncWorker>().build()
-        WorkManager.getInstance(applicationContext).enqueue(workRequest)
-    }
 
     fun clearError() {
         setErrorMessage(null)

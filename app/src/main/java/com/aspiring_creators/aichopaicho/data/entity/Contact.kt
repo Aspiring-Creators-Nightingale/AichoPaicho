@@ -27,4 +27,6 @@ data class Contact(
     val isDeleted: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
-)
+){
+    constructor(): this("", "", null, emptyList(), null, false, System.currentTimeMillis(), System.currentTimeMillis())
+}

@@ -26,4 +26,6 @@ data class Record(
     val description: String?,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
-)
+){
+    constructor(): this("", null, null, 0, 0, 0, false, false, null, System.currentTimeMillis(), System.currentTimeMillis())
+}

@@ -26,7 +26,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.aspiring_creators.aichopaicho.R
-import com.aspiring_creators.aichopaicho.data.WorkerUtils
+import com.aspiring_creators.aichopaicho.data.BackgroundSyncWorker
 import com.aspiring_creators.aichopaicho.ui.component.DashboardContent
 import com.aspiring_creators.aichopaicho.ui.component.ErrorContent
 import com.aspiring_creators.aichopaicho.ui.component.LoadingContent
@@ -78,14 +78,6 @@ fun DashboardScreen(
                         )
                     }
                 }
-                item {
-                    val current = LocalContext.current
-                    Button(onClick = {
-                       WorkerUtils.enqueueOneTimeSync(current)
-                    }) {
-                        Text(text = "Run Background Worker")
-                    }
-                }
 
                 // Spacer
                 item {
@@ -115,7 +107,9 @@ fun DashboardScreen(
                         else -> {
                             ErrorContent(
                                 errorMessage = uiState.errorMessage ?: "Unknown error occurred",
-                                onRetry = {},
+                                onRetry = {
+                                    dashboardScreenViewModel.loadUserData()
+                                },
                             )
                         }
                     }

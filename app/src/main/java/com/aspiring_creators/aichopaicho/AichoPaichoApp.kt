@@ -2,6 +2,7 @@ package com.aspiring_creators.aichopaicho
 
 import android.app.Application
 import android.util.Log
+import android.util.Log.DEBUG
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import dagger.hilt.android.HiltAndroidApp
@@ -17,13 +18,11 @@ class AichoPaichoApp : Application(), Configuration.Provider {
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)
-            .setMinimumLoggingLevel(android.util.Log.DEBUG)
+            .setMinimumLoggingLevel(Log.INFO)
             .build()
 
     override fun onCreate() {
         super.onCreate()
         Log.d("AichoPaichoApp", "WorkManager configuration initialized with HiltWorkerFactory: $workerFactory")
     }
-
-
 }

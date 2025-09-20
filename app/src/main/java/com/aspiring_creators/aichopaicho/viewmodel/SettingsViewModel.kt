@@ -169,7 +169,7 @@ class SettingsViewModel @Inject constructor(
                 hideSignInDialog()
             }
 
-             BackgroundSyncWorker.scheduleOneTimeSyncOnLogin(activity)
+             BackgroundSyncWorker.scheduleOneTimeSyncOnLogin(activity.applicationContext)
 
             Result.success(firebaseUser!!)
 

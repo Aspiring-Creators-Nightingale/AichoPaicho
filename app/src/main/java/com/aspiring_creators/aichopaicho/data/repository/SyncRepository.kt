@@ -27,9 +27,8 @@ class SyncRepository @Inject constructor(
             val user = userRepository.getUser()
 
             val listOfContacts = contacts.first()
-                listOfContacts.forEach { contact ->
+            listOfContacts.forEach { contact ->
                     try {
-
                         val contactData = hashMapOf(
                             "id" to contact.id,
                             "name" to contact.name,
