@@ -45,4 +45,8 @@ class RecordRepository @Inject constructor(private val recordDao: RecordDao) {
     suspend fun insertRecord(record: Record) {
         recordDao.insertRecord(record)
     }
+
+    suspend fun updateUserId(oldUserId: String, newUserId: String) {
+        recordDao.updateUserId(oldUserId, newUserId)
+    }
 }

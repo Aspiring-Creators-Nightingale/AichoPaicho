@@ -15,6 +15,7 @@ import com.aspiring_creators.aichopaicho.ui.screens.ContactListScreen
 import com.aspiring_creators.aichopaicho.ui.screens.ContactTransactionScreen
 import com.aspiring_creators.aichopaicho.ui.screens.DashboardScreen
 import com.aspiring_creators.aichopaicho.ui.screens.PermissionScreen
+import com.aspiring_creators.aichopaicho.ui.screens.SettingsScreen
 import com.aspiring_creators.aichopaicho.ui.screens.TransactionDetailScreen
 import com.aspiring_creators.aichopaicho.ui.screens.ViewTransactionScreen
 import com.aspiring_creators.aichopaicho.ui.screens.WelcomeScreen
@@ -78,7 +79,11 @@ fun AppNavigationGraph(
                             launchSingleTop = true
                         }
                     },
-                    onNavigateToSettings = {},
+                    onNavigateToSettings = {
+                        navController.navigate(Routes.SETTING_SCREEN){
+                            launchSingleTop = true
+                        }
+                    },
                     onNavigateToContactList = {
                         navController.navigate("${Routes.CONTACT_LIST_SCREEN}/$it"){
                             launchSingleTop = true
@@ -166,6 +171,14 @@ fun AppNavigationGraph(
                             launchSingleTop = false
                         }
                     },
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+
+            composable(Routes.SETTING_SCREEN){
+                SettingsScreen(
                     onNavigateBack = {
                         navController.popBackStack()
                     }

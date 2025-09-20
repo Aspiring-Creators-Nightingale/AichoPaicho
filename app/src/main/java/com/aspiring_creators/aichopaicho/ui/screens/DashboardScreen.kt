@@ -8,10 +8,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -19,10 +21,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.aspiring_creators.aichopaicho.R
+import com.aspiring_creators.aichopaicho.data.WorkerUtils
 import com.aspiring_creators.aichopaicho.ui.component.DashboardContent
 import com.aspiring_creators.aichopaicho.ui.component.ErrorContent
 import com.aspiring_creators.aichopaicho.ui.component.LoadingContent
@@ -74,6 +78,14 @@ fun DashboardScreen(
                         )
                     }
                 }
+                item {
+                    val current = LocalContext.current
+                    Button(onClick = {
+                       WorkerUtils.enqueueOneTimeSync(current)
+                    }) {
+                        Text(text = "Run Background Worker")
+                    }
+                }
 
                 // Spacer
                 item {
@@ -94,40 +106,16 @@ fun DashboardScreen(
                         uiState.user != null -> {
                             DashboardContent(
                                 uiState = uiState,
-                                onSignOut = onSignOut,
                                 onNavigateToAddTransaction = onNavigateToAddTransaction,
                                 onNavigateToViewTransactions = onNavigateToViewTransactions,
-                                onNavigateToSettings = onNavigateToSettings,
-                                onRefresh = {
-                                    scope.launch {
-                                        val result = dashboardScreenViewModel.refreshUserData()
-                                        if (result.isFailure) {
-                                            snackbarHostState.showSnackbar("Failed to refresh data")
-                                        }
-                                    }
-                                },
-                                onSignOutClick = {
-                                    scope.launch {
-                                        val result = dashboardScreenViewModel.signOut()
-                                        if (result.isSuccess) {
-                                            snackbarHostState.showSnackbar("Signed out successfully")
-                                            onSignOut?.invoke()
-                                        } else {
-                                            snackbarHostState.showSnackbar("Failed to sign out")
-                                        }
-                                    }
-                                }
+                                onNavigateToSettings = onNavigateToSettings
                             )
                         }
 
                         else -> {
                             ErrorContent(
                                 errorMessage = uiState.errorMessage ?: "Unknown error occurred",
-                                onRetry = {
-                                    scope.launch {
-                                        dashboardScreenViewModel.refreshUserData()
-                                    }
-                                }
+                                onRetry = {},
                             )
                         }
                     }

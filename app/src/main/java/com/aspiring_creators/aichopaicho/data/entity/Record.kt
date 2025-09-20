@@ -8,9 +8,9 @@ import androidx.room.PrimaryKey
 @Entity(
     tableName = "records",
     foreignKeys = [
-        ForeignKey(entity = User::class, parentColumns = ["id"], childColumns = ["userId"]),
-        ForeignKey(entity = Contact::class, parentColumns = ["id"], childColumns = ["contactId"]),
-        ForeignKey(entity = Type::class, parentColumns = ["id"], childColumns = ["typeId"])
+        ForeignKey(entity = User::class, parentColumns = ["id"], childColumns = ["userId"], onDelete = ForeignKey.CASCADE),
+        ForeignKey(entity = Contact::class, parentColumns = ["id"], childColumns = ["contactId"], onDelete = ForeignKey.CASCADE),
+        ForeignKey(entity = Type::class, parentColumns = ["id"], childColumns = ["typeId"], onDelete = ForeignKey.CASCADE)
     ],
     indices = [Index(value = ["userId"]), Index(value = ["contactId"]), Index(value = ["typeId"])]
 )

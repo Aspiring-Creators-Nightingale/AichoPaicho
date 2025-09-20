@@ -34,4 +34,7 @@ interface ContactDao {
     @Query("UPDATE contacts SET isDeleted = 1, updatedAt = :timestamp WHERE id = :contactId")
     suspend fun deleteContact(contactId: String, timestamp: Long = System.currentTimeMillis())
 
+    @Query("UPDATE contacts SET userId = :newUserId WHERE userId = :oldUserId")
+    suspend fun updateUserId(oldUserId: String, newUserId: String)
+
 }

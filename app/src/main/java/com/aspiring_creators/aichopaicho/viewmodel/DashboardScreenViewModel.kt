@@ -1,14 +1,19 @@
 package com.aspiring_creators.aichopaicho.viewmodel
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import com.aspiring_creators.aichopaicho.data.BackgroundSyncWorker
 import com.aspiring_creators.aichopaicho.data.entity.User
 import com.aspiring_creators.aichopaicho.data.repository.UserRecordSummaryRepository
 import com.aspiring_creators.aichopaicho.data.repository.UserRepository
 import com.aspiring_creators.aichopaicho.viewmodel.data.DashboardScreenUiState
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,7 +27,8 @@ import javax.inject.Inject
 class DashboardScreenViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val firebaseAuth: FirebaseAuth,
-    private val userRecordSummaryRepository: UserRecordSummaryRepository
+    private val userRecordSummaryRepository: UserRecordSummaryRepository,
+    @ApplicationContext private val applicationContext: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardScreenUiState())
@@ -115,9 +121,9 @@ class DashboardScreenViewModel @Inject constructor(
         }
     }
 
-    suspend fun refreshUserData(): Result<Unit> {
-
-        return TODO("No need for refresh for now")
+    fun RunTestBackgroundWorker(){
+        val workRequest = OneTimeWorkRequestBuilder<BackgroundSyncWorker>().build()
+        WorkManager.getInstance(applicationContext).enqueue(workRequest)
     }
 
     fun clearError() {

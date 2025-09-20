@@ -22,8 +22,6 @@ class ContactRepository @Inject constructor(private val contactDao: ContactDao) 
             false
         }
     }
-
-
      suspend fun getContactByContactId(contactId: String): Contact? {
         return contactDao.getContactByContactId(contactId)
     }
@@ -48,4 +46,7 @@ class ContactRepository @Inject constructor(private val contactDao: ContactDao) 
         contactDao.deleteContact(contactId)
     }
 
+    suspend fun updateUserId(oldUserId: String, newUserId: String) {
+     contactDao.updateUserId(oldUserId, newUserId)
+    }
 }

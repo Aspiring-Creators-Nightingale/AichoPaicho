@@ -2,11 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <queries>
-        <!-- Allow querying contacts apps -->
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <data android:mimeType="vnd.android.cursor.item/contact" />
         </intent>
+<!--        <package>com.google.android.gms</package>-->
     </queries>
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <application

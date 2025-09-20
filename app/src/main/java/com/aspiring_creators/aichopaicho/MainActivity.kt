@@ -14,6 +14,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.aspiring_creators.aichopaicho.data.BackgroundSyncWorker
 import com.aspiring_creators.aichopaicho.ui.navigation.AppNavigationGraph
 import com.aspiring_creators.aichopaicho.ui.theme.AichoPaichoTheme
 import com.aspiring_creators.aichopaicho.viewmodel.WelcomeViewModel
@@ -24,6 +25,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        BackgroundSyncWorker.schedulePeriodicSync(applicationContext)
         setContent {
             AichoPaichoTheme {
              AichoPaicho()

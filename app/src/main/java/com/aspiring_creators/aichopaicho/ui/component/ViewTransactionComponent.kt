@@ -914,7 +914,7 @@ fun TransactionFilterSectionPreview() {
 fun TransactionCardPreview() {
     TransactionCard(
         record = Record("","","89474dfsdf-dfsdf",1,2323,System.currentTimeMillis(),false,false,""),
-        contact = Contact("c1","Golesam",listOf("987"),"",false),
+        contact = Contact("c1","Golesam", userId = "",listOf("987"),"",false),
         onRecordClick = {},
         onCompletionToggle = {},
         onDeleteRecord = {},

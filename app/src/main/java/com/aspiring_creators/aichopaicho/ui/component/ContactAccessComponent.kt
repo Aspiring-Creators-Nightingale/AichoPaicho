@@ -126,7 +126,8 @@ fun ContactPickerField(
                                     contactId = null,
                                     isDeleted = false,
                                     createdAt = System.currentTimeMillis(),
-                                    updatedAt = System.currentTimeMillis()
+                                    updatedAt = System.currentTimeMillis(),
+                                    userId = ""
                                 )
                                 onContactSelected(emptyContact)
                             }
@@ -518,6 +519,7 @@ private fun loadContactsFromDevice(contentResolver: ContentResolver): List<Conta
                     id = "", // Your app's internal ID
                     name = name,
                     phone = phoneNumbers,
+                    userId = "",
                     contactId = contactId
                 )
                 contactsList.add(contact)
@@ -809,6 +811,7 @@ fun ContactItemPreview() {
             contact = Contact(
                 id = "1",
                 name = "John Doe",
+                userId = "",
                 phone = listOf("+1234567890", "+0987654321"),
                 contactId = "123"
             )

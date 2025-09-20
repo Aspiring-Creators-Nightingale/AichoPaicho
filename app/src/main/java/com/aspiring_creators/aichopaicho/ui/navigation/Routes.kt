@@ -7,6 +7,7 @@ object Routes {
 
     const val CONTACT_LIST_TYPE = "contactListType"
 
+    const val SETTING_SCREEN = "setting_screen"
     const val CONTACT_LIST_SCREEN = "contact_list_screen"
 
     const val WELCOME_SCREEN = "welcome_screen"

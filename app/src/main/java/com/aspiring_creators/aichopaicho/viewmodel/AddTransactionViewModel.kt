@@ -52,6 +52,7 @@ class AddTransactionViewModel @Inject constructor(
                     name = uiState.value.contact!!.name,
                     phone = uiState.value.contact!!.phone,
                     contactId = uiState.value.contact!!.contactId,
+                    userId = user.id
                 )
 
                 contactRepository.checkAndInsert(contactToSave)

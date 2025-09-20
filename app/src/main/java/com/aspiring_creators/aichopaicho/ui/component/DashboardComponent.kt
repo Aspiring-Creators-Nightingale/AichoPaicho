@@ -144,12 +144,9 @@ fun ErrorContentPreview() {
 @Composable
 fun DashboardContent(
     uiState: DashboardScreenUiState,
-    onSignOut: (() -> Unit)?,
     onNavigateToAddTransaction: (() -> Unit)?,
     onNavigateToViewTransactions: (() -> Unit)?,
     onNavigateToSettings: (() -> Unit)?,
-    onRefresh: () -> Unit,
-    onSignOutClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -200,7 +197,7 @@ fun DashboardContent(
             onNavigateToSettings?.let { navigateToSettings ->
                 QuickActionButton(
                     text = "Settings",
-                    onClick = { navigateToSettings },
+                    onClick =  navigateToSettings ,
                     modifier = Modifier.padding(bottom = 8.dp),
                     contentDescription = "Settings"
                 )
@@ -208,24 +205,6 @@ fun DashboardContent(
         }
 
         Spacer(modifier = Modifier.weight(1f))
-
-        /*    QuickActionButton(
-               text = "Refresh \n Data",
-               onClick = onRefresh,
-               modifier = Modifier.padding(bottom = 8.dp),
-               contentDescription = "Refresh the Data"
-           ) TODO: Add refresh button */
-        // Sign Out Button
-        /*   onSignOut?.let {
-               ButtonComponent(
-                   R.drawable.logo_skip,
-                   "Sign Out",
-                   onClick = onSignOutClick,
-                   modifier = Modifier
-                       .padding(horizontal = 32.dp)
-                       .width(200.dp)
-               )
-           }TODO : Add Sign Out Button*/
 
         // Error message display
         uiState.errorMessage?.let { error ->
@@ -298,11 +277,8 @@ fun UserDashboardToast(uiState: DashboardScreenUiState) {
 fun DashboardScreenPreview() {
     DashboardContent(
         uiState = DashboardScreenUiState(),
-        onSignOut = {},
         onNavigateToAddTransaction = {},
         onNavigateToViewTransactions = {},
-        onRefresh = {},
-        onSignOutClick = {},
         onNavigateToSettings = {}
     )
 }

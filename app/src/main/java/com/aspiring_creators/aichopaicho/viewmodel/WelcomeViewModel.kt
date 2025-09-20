@@ -9,6 +9,7 @@ import androidx.credentials.GetCredentialResponse
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aspiring_creators.aichopaicho.R
+import com.aspiring_creators.aichopaicho.data.BackgroundSyncWorker
 import com.aspiring_creators.aichopaicho.data.entity.User
 import com.aspiring_creators.aichopaicho.data.mapper.toUserEntity
 import com.aspiring_creators.aichopaicho.data.local.ScreenViewRepository
@@ -112,6 +113,8 @@ class WelcomeViewModel @Inject constructor(
             }
 
             screenViewRepository.markScreenAsShown(Routes.WELCOME_SCREEN)
+            BackgroundSyncWorker.scheduleOneTimeSyncOnLogin(activity)
+
             Result.success(user!!)
 
         } catch (e: Exception) {
