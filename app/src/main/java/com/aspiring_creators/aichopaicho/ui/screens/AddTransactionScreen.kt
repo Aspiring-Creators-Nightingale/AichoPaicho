@@ -39,7 +39,6 @@ import com.aspiring_creators.aichopaicho.ui.component.DateInputField
 import com.aspiring_creators.aichopaicho.ui.component.LabelComponent
 import com.aspiring_creators.aichopaicho.ui.component.MultiLineTextInputField
 import com.aspiring_creators.aichopaicho.ui.component.QuickActionButton
-import com.aspiring_creators.aichopaicho.ui.component.SegmentedLentBorrowedToggle
 import com.aspiring_creators.aichopaicho.ui.component.SnackbarComponent // Added
 import com.aspiring_creators.aichopaicho.ui.component.TextComponent
 import com.aspiring_creators.aichopaicho.ui.component.TypeConstants
@@ -50,6 +49,7 @@ import androidx.compose.material3.IconButton // Added for back button
 import androidx.compose.material3.OutlinedButton // Added for Cancel button
 import androidx.compose.material3.ButtonDefaults // Added for Cancel button theming
 import androidx.compose.material3.Text
+import com.aspiring_creators.aichopaicho.ui.component.SegmentedLentBorrowedToggle
 
 
 @Composable
@@ -110,8 +110,8 @@ fun AddTransactionScreen(
 
                     TextComponent(
                         value = "Add New Transaction",
-                        textSize = 24.sp, // Slightly reduced for balance
-                        // textColor removed, will use MaterialTheme.colorScheme.onSurface
+                        textSize = 24.sp,
+
                     )
                 }
 

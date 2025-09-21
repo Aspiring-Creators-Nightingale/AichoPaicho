@@ -46,7 +46,6 @@ fun StringInputField(
     modifier: Modifier = Modifier,
     value: String // Added value parameter for state hoisting
 ) {
-    // currentValue is now driven by the 'value' parameter
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange, // Directly use onValueChange
@@ -159,7 +158,7 @@ fun DateInputField(
     var showDialog by remember { mutableStateOf(false) }
 
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = selectedDate ?: if (initializeWithCurrentDate && selectedDate == null) System.currentTimeMillis() else null
+        initialSelectedDateMillis = selectedDate ?: if (initializeWithCurrentDate) System.currentTimeMillis() else null
     )
 
     val formattedDateText by remember(selectedDate) { // Re-calculate when selectedDate changes externally
@@ -174,7 +173,6 @@ fun DateInputField(
     LaunchedEffect(initializeWithCurrentDate, selectedDate) {
         if (initializeWithCurrentDate && selectedDate == null) {
             val now = System.currentTimeMillis()
-            // datePickerState.selectedDateMillis = now // Let state be driven by selectedDate from viewModel
             onDateSelected(now) // Inform viewModel
         }
         // If selectedDate is updated from ViewModel, update picker state

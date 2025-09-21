@@ -887,21 +887,12 @@ fun TransactionCard(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    // Delete icon small
-/*                    IconButton(onClick = onDeleteRecord) {
-                        Icon(
-                            imageVector = Icons.Outlined.Delete,
-                            contentDescription = "Delete",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }*/
                 }
             }
         }
     }
 }
 
-// ---------- Previews (simple) ----------
 @Preview(showBackground = true, widthDp = 360)
 @Composable
 fun TransactionFilterSectionPreview() {

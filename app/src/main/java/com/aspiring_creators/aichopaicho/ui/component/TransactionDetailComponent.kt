@@ -11,13 +11,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
+// import androidx.compose.material3.CardColors // Not needed directly
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Divider
-import androidx.compose.material3.DividerDefaults
+// import androidx.compose.material3.DividerDefaults // Not used directly
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -30,70 +30,63 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+// import androidx.compose.ui.graphics.Color // Removed
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+// import androidx.compose.ui.unit.sp // Using MaterialTheme typography
 import com.aspiring_creators.aichopaicho.CurrencyUtils
 import com.aspiring_creators.aichopaicho.data.entity.Contact
 import com.aspiring_creators.aichopaicho.data.entity.Record
 import com.aspiring_creators.aichopaicho.data.entity.Type
+import com.aspiring_creators.aichopaicho.ui.theme.AichoPaichoTheme
+// import java.util.Currency // Not directly used
 import java.text.SimpleDateFormat
-import java.util.Currency
 import java.util.Date
 import java.util.Locale
 
 
-
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
- fun TransactionDetailsCard(
+fun TransactionDetailsCard(
     record: Record,
     contact: Contact?,
     type: Type?,
     isEditing: Boolean,
-    onAmountChange: (Int) -> Unit,
+    onAmountChange: (String) -> Unit, // Changed to String
     onDescriptionChange: (String) -> Unit,
-    onDateChange: (Long) -> Unit,
+    onDateChange: (Long) -> Unit, // Kept, though no UI for edit in this card
     onCompletionToggle: () -> Unit
 ) {
     val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
-    var amountText by remember(record.amount) { mutableStateOf(record.amount.toString()) }
-    var descriptionText by remember(record.description) { mutableStateOf(record.description ?: "") }
+    // Update local state handling for editing
+    var amountText by remember(record.amount, isEditing) {
+        // Initialize with formatted string if editing, otherwise it's not shown in an input field
+        mutableStateOf(if (isEditing) (record.amount / 100.0).toString() else "")
+    }
+    var descriptionText by remember(record.description, isEditing) {
+        mutableStateOf(if (isEditing) record.description ?: "" else "")
+    }
 
     val context = LocalContext.current
 
-    val cardColors = if (record.typeId == TypeConstants.LENT_ID) {
-        CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-            disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    } else {
-        CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceDim,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-            disabledContainerColor = Color.Red.copy(alpha = 0.3f),
-            disabledContentColor = Color.White.copy(alpha = 0.3f)
-        )
-    }
+    val cardColors = CardDefaults.cardColors(
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        contentColor = MaterialTheme.colorScheme.onSurface
+    )
 
-    
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = cardColors
     ) {
         Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -101,63 +94,62 @@ import java.util.Locale
             ) {
                 Text(
                     text = "Transaction Details",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.titleLarge
                 )
-
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(
                         checked = record.isComplete,
                         onCheckedChange = { onCompletionToggle() }
                     )
-                    Text("Completed")
+                    Text(
+                        "Completed",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
             }
 
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
-            // Contact Name
             ContactDisplayRow(contact)
 
-            // Type
             DetailRow(
                 label = "Type",
-                value = type?.name ?: "Unknown Type",
+                value = (type?.name ?: TypeConstants.getTypeName(record.typeId)), // Use typeId as fallback
                 isEditing = false
             )
-            // Amount
+
             if (isEditing) {
                 OutlinedTextField(
                     value = amountText,
                     onValueChange = {
-                        amountText = it
-                        it.toIntOrNull()?.let { amount -> onAmountChange(amount) }
+                        amountText = it // Update local state
+                        onAmountChange(it) // Pass raw string to ViewModel for parsing
                     },
                     label = { Text("Amount") },
                     modifier = Modifier.fillMaxWidth(),
-                    prefix = { Text(CurrencyUtils.getCurrencyCode(context)) }
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    prefix = { Text(CurrencyUtils.getCurrencySymbol(context)) }
                 )
             } else {
                 DetailRow(
                     label = "Amount",
-                    value = "${CurrencyUtils.getCurrencyCode(context)} ${record.amount}",
+                    // Assuming amount is stored in cents
+                    value = "${CurrencyUtils.getCurrencySymbol(context)} ${ "%.2f".format(record.amount / 100.0)}",
                     isEditing = false
                 )
             }
 
-            // Date
             DetailRow(
                 label = "Date",
                 value = dateFormatter.format(Date(record.date)),
-                isEditing = false
+                isEditing = false // Date is not editable in this component
             )
 
-            // Description
             if (isEditing) {
                 OutlinedTextField(
                     value = descriptionText,
                     onValueChange = {
-                        descriptionText = it
+                        descriptionText = it // Update local state
                         onDescriptionChange(it)
                     },
                     label = { Text("Description") },
@@ -173,18 +165,21 @@ import java.util.Locale
                 )
             }
 
-            // Created/Updated info
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
             Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = "Created: ${dateFormatter.format(Date(record.createdAt))}",
-                    fontSize = 12.sp,
+                    text = "Created: ${SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()).format(Date(record.createdAt))}",
+                    style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "Updated: ${dateFormatter.format(Date(record.updatedAt))}",
-                    fontSize = 12.sp,
+                    text = "Updated: ${SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()).format(Date(record.updatedAt))}",
+                    style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -196,52 +191,100 @@ import java.util.Locale
 private fun DetailRow(
     label: String,
     value: String,
-    isEditing: Boolean
+    isEditing: Boolean // Parameter kept for potential future use or consistency
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         Text(
             text = label,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
             text = value,
-            fontSize = 16.sp
+            style = MaterialTheme.typography.bodyLarge
         )
     }
 }
 
 @Composable
 fun ContactDisplayRow(
-    contact: Contact?,
-    ) {
+    contact: Contact?
+) {
     val context = LocalContext.current
-    val validContactId = contact?.contactId?.toLongOrNull() // Safely convert to Long
+    val validContactId = contact?.contactId?.toLongOrNull()
 
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween, // Or Arrangement.SpaceEvenly
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-
-        DetailRow(
-            label = "Contact",
-            value = contact?.name ?: "Unknown Contact",
-            isEditing = false,
-        )
-
-        Button(
-            onClick = {
-                validContactId?.let { id -> // Only execute if id is not null
-                    openContactDetails(context = context, contactId = id)
-                }
-            },
-            enabled = validContactId != null // Button is enabled only if there's a valid ID
-        ) {
-            Text(text = "View")
+        Column(modifier = Modifier.weight(1f)) { // Allow name to take available space
+            DetailRow(
+                label = "Contact",
+                value = contact?.name ?: "Unknown Contact",
+                isEditing = false,
+            )
         }
+
+        if (validContactId != null) { // Only show button if contact is valid
+            Button(
+                onClick = {
+                    openContactDetails(context = context, contactId = validContactId)
+                },
+                modifier = Modifier.padding(start = 8.dp) // Add some spacing
+            ) {
+                Text(text = "View Details")
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "TransactionDetailsCard - View Mode")
+@Composable
+fun TransactionDetailsCardPreview() {
+    AichoPaichoTheme {
+        val sampleRecord = Record(
+            id = "1", userId = "user1", contactId = "contact1", typeId = TypeConstants.LENT_ID,
+            amount = 12550, // e.g. 125.50
+            date = System.currentTimeMillis() - 86400000L * 5, // 5 days ago
+            description = "Lunch with client. Discussed project milestones and future collaboration opportunities.",
+            isComplete = false,
+            createdAt = System.currentTimeMillis() - 86400000L * 10, // 10 days ago
+            updatedAt = System.currentTimeMillis() - 86400000L * 2,  // 2 days ago
+            isDeleted = false
+        )
+        val sampleContact = Contact(id = "contact1", name = "Alex Johnson", phone = listOf("555-0101"), contactId = "101", userId = "user1")
+        val sampleType = Type(id = TypeConstants.LENT_ID, name = "Lent")
+
+        TransactionDetailsCard(
+            record = sampleRecord, contact = sampleContact, type = sampleType, isEditing = false,
+            onAmountChange = {}, onDescriptionChange = {}, onDateChange = {}, onCompletionToggle = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "TransactionDetailsCard - Edit Mode")
+@Composable
+fun TransactionDetailsCardEditingPreview() {
+    AichoPaichoTheme {
+        val sampleRecord = Record(
+            id = "2", userId = "user1", contactId = "contact2", typeId = TypeConstants.BORROWED_ID,
+            amount = 7500, // e.g. 75.00
+            date = System.currentTimeMillis() - 86400000L * 3, // 3 days ago
+            description = "Shared expenses for team outing.",
+            isComplete = true,
+            createdAt = System.currentTimeMillis() - 86400000L * 7, // 7 days ago
+            updatedAt = System.currentTimeMillis() - 86400000L * 1,  // 1 day ago
+            isDeleted = false
+        )
+        val sampleContact = Contact(id = "contact2", name = "Maria Garcia", phone = listOf("555-0202"), contactId = "102", userId = "user1")
+        val sampleType = Type(id = TypeConstants.BORROWED_ID, name = "Borrowed")
+
+        TransactionDetailsCard(
+            record = sampleRecord, contact = sampleContact, type = sampleType, isEditing = true,
+            onAmountChange = {}, onDescriptionChange = {}, onDateChange = {}, onCompletionToggle = {}
+        )
     }
 }

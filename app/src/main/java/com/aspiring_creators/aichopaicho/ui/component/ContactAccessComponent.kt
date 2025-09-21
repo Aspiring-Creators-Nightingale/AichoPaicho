@@ -95,13 +95,9 @@ fun ContactPickerField(
     Column(modifier = modifier) {
         OutlinedTextField(
             value = currentValue,
-            onValueChange = { /* Make read-only or handle manual input if desired */
-                            // If you want to allow manual input and update the Contact object:
-                            // currentValue = it
-                            // val manualContact = selectedContact?.copy(name = it) ?: Contact(name = it, /* other fields */)
-                            // onContactSelected(manualContact)
+            onValueChange = {
                           },
-            readOnly = true, // To enforce selection via picker. Remove if manual edit is desired.
+            readOnly = true,
             label = { Text(label) },
             placeholder = { Text(placeholder) },
             modifier = Modifier.fillMaxWidth(),
@@ -121,8 +117,7 @@ fun ContactPickerField(
                         IconButton(
                             onClick = {
                                 currentValue = ""
-                                // Notify that selection is cleared by passing a "cleared" or null contact
-                                val emptyContact = Contact( // Or pass null and handle upstream
+                                   val emptyContact = Contact(
                                     id = "", name = "", phone = emptyList(), contactId = null,
                                     isDeleted = false, createdAt = 0, updatedAt = 0, userId = ""
                                 )
@@ -207,14 +202,10 @@ fun ContactPickerDialog(
                 ) {
                     ContactPermissionHandler(
                         onPermissionGranted = {
-                            // This will be called when permission is granted.
-                            // We need to trigger contact loading here.
-                            // `ContactsLoader` will update `isLoading`, `hasError`, and `contacts`.
-                            if(!permissionGrantedInitially) { // Load only once after initial grant
+                              if(!permissionGrantedInitially) { // Load only once after initial grant
                                 permissionGrantedInitially = true
                             }
-                            // ContactsLoader is now called within ContactPermissionHandler's onPermissionGranted
-                            ContactsLoader(
+                              ContactsLoader(
                                 onContactsLoaded = { loadedContacts ->
                                     contacts = loadedContacts
                                     isLoading = false // Ensure loading is false after load
@@ -263,8 +254,7 @@ fun ContactPickerDialog(
                             }
                         },
                         onPermissionDenied = {
-                            // This composable (PermissionDeniedUI) will be shown by ContactPermissionHandler
-                        }
+                         }
                     )
                 }
             }
@@ -277,7 +267,7 @@ fun ContactPickerDialog(
                 Text("Cancel")
             }
         }
-        // AlertDialog colors will use MaterialTheme defaults
+
     )
 }
 
@@ -470,12 +460,12 @@ private fun getPhoneNumbers(contentResolver: ContentResolver, contactId: String)
     return phoneNumbers
 }
 
-private enum class PermissionStatus { // Renamed from PermissionState to avoid conflict
+private enum class PermissionStatus {
     GRANTED,
     DENIED_SHOW_RATIONALE,
     PERMANENTLY_DENIED,
-    INITIAL_CHECK, // New state for initial check before launching
-    REQUESTING // New state while permission dialog is active
+    INITIAL_CHECK,
+    REQUESTING
 }
 
 @Composable

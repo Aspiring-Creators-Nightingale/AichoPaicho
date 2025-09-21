@@ -5,7 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow // Keep FlowRow if already used
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,10 +17,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Card // Used by UserDashboardToast, NetBalanceCard
+import androidx.compose.material3.CardDefaults // Used by Card
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.Text // Standard Text, used alongside TextComponent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,25 +31,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.request.error
 import coil3.request.placeholder
-import coil3.toUri
-// import coil3.request.error // Already imported via ImageRequest.Builder
-// import coil3.request.placeholder // Already imported via ImageRequest.Builder
 import com.aspiring_creators.aichopaicho.R
+import com.aspiring_creators.aichopaicho.data.entity.*
 import com.aspiring_creators.aichopaicho.data.entity.User
-import com.aspiring_creators.aichopaicho.ui.theme.AichoPaichoTheme // Added for previews
+import com.aspiring_creators.aichopaicho.ui.theme.AichoPaichoTheme
 import com.aspiring_creators.aichopaicho.viewmodel.data.DashboardScreenUiState
 
 @Composable
-fun UserProfileImage(
-    photoUrl: String?, // Made nullable to handle potential null from user?.photoUrl
+fun UserProfileImage( // No changes from previous plan, looks good
+    photoUrl: String?,
     userName: String?,
     modifier: Modifier = Modifier
 ) {
@@ -61,7 +57,7 @@ fun UserProfileImage(
     ) {
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(photoUrl ?: R.drawable.placeholder_user_profile) // Fallback if URL is null
+                .data(photoUrl ?: R.drawable.placeholder_user_profile)
                 .crossfade(true)
                 .placeholder(R.drawable.placeholder_user_profile)
                 .error(R.drawable.placeholder_user_profile_error)
@@ -73,22 +69,10 @@ fun UserProfileImage(
                 .clip(CircleShape),
             onState = { state ->
                 when (state) {
-                    is AsyncImagePainter.State.Loading -> {
-                        Log.d("UserProfileImage", "Loading image: $photoUrl")
-                    }
-                    is AsyncImagePainter.State.Error -> {
-                        Log.e(
-                            "UserProfileImage",
-                            "Error loading image: $photoUrl",
-                            state.result.throwable
-                        )
-                    }
-                    is AsyncImagePainter.State.Success -> {
-                        Log.d("UserProfileImage", "Successfully loaded image: $photoUrl")
-                    }
-                    else -> {
-                        Log.i("UserProfileImage", "Image state: $state for url: $photoUrl")
-                    }
+                    is AsyncImagePainter.State.Loading -> Log.d("UserProfileImage", "Loading image: $photoUrl")
+                    is AsyncImagePainter.State.Error -> Log.e("UserProfileImage", "Error loading image: $photoUrl", state.result.throwable)
+                    is AsyncImagePainter.State.Success -> Log.d("UserProfileImage", "Successfully loaded image: $photoUrl")
+                    else -> Log.i("UserProfileImage", "Image state: $state for url: $photoUrl")
                 }
             }
         )
@@ -100,7 +84,7 @@ fun UserProfileImage(
 fun UserProfileImagePreview() {
     AichoPaichoTheme {
         UserProfileImage(
-            photoUrl = "https://example.com/image.jpg", // Use a placeholder or ensure network for actual URL
+            photoUrl = null,
             userName = "Goodness",
             modifier = Modifier.size(64.dp)
         )
@@ -108,31 +92,32 @@ fun UserProfileImagePreview() {
 }
 
 @Composable
-fun ErrorContent(
+fun ErrorContent( // Uses TextComponent and ButtonComponent from AppComponent.kt
     errorMessage: String,
     onRetry: () -> Unit
 ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp), // Added padding
+            .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center // Center content
+            verticalArrangement = Arrangement.Center
         ) {
-            TextComponent(
+            TextComponent( // Using TextComponent from AppComponent.kt
                 value = "Error: $errorMessage",
-                textSize = 18.sp, // Adjusted size
-                color = MaterialTheme.colorScheme.error // Use theme error color
+                // textSize = 18.sp, // TextComponent default is 12.sp, use its default or pass explicit M3 typography based size
+                color = MaterialTheme.colorScheme.error,
+                textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(16.dp))
-            ButtonComponent(
+            ButtonComponent( // Using ButtonComponent from AppComponent.kt
                 vectorLogo = Icons.Default.Refresh,
                 text = "Retry",
                 onClick = onRetry,
-                modifier = Modifier.fillMaxWidth(0.6f) // Control width
+                modifier = Modifier.fillMaxWidth(0.6f)
             )
         }
     }
@@ -150,81 +135,13 @@ fun ErrorContentPreview() {
 }
 
 @Composable
-fun DashboardContent(
-    uiState: DashboardScreenUiState,
-    onNavigateToAddTransaction: (() -> Unit)?,
-    onNavigateToViewTransactions: (() -> Unit)?,
-    onNavigateToSettings: (() -> Unit)?,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            // .padding(16.dp) // Padding applied by LazyColumn in DashboardScreen
-    ) {
-        UserDashboardToast(uiState) // This is the user card
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = "Quick Actions",
-            style = MaterialTheme.typography.titleLarge, // Using titleLarge for section header
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 8.dp, start = 8.dp, end = 8.dp) // Adjusted padding
-        )
-
-        FlowRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp), // Padding for FlowRow content
-            horizontalArrangement = Arrangement.spacedBy(12.dp), // Increased spacing
-            verticalArrangement = Arrangement.spacedBy(12.dp), // Increased spacing
-        ) {
-            onNavigateToAddTransaction?.let { navigate ->
-                QuickActionButton(
-                    text = "New Txn", // Shorter text
-                    onClick = navigate,
-                    contentDescription = "Add new Record or Transaction"
-                )
-            }
-            onNavigateToViewTransactions?.let { navigate ->
-                QuickActionButton(
-                    text = "View Txns", // Shorter text
-                    onClick = navigate,
-                    contentDescription = "View Transactions"
-                )
-            }
-            onNavigateToSettings?.let { navigate ->
-                QuickActionButton(
-                    text = "Settings",
-                    onClick = navigate,
-                    contentDescription = "Settings"
-                )
-            }
-        }
-
-        // Error message display (if any, specific to DashboardContent's operations, not general screen errors)
-        uiState.errorMessage?.let { error ->
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = error,
-                color = MaterialTheme.colorScheme.error,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            )
-        }
-    }
-}
-
-@Composable
-fun UserDashboardToast(uiState: DashboardScreenUiState) { // Renamed Preview to avoid conflict
+fun UserDashboardToast(uiState: DashboardScreenUiState) { // User Welcome Card
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp), // Slightly reduced elevation
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant, // Use surfaceVariant
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant // Use onSurfaceVariant
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         )
     ) {
         Row(
@@ -234,35 +151,28 @@ fun UserDashboardToast(uiState: DashboardScreenUiState) { // Renamed Preview to 
             verticalAlignment = Alignment.CenterVertically
         ) {
             UserProfileImage(
-                photoUrl = uiState.user?.photoUrl.toString(),
+                photoUrl = uiState.user?.photoUrl?.toString(),
                 userName = uiState.user?.name,
-                modifier = Modifier.size(56.dp) // Adjusted size
+                modifier = Modifier.size(56.dp)
             )
-
             Spacer(modifier = Modifier.width(16.dp))
-
             Column {
-                Text(
+                Text( // Standard Text for consistency within this card
                     text = "Welcome back!",
                     style = MaterialTheme.typography.titleMedium
-                    // Color will be inherited from Card's contentColor (onSurfaceVariant)
                 )
-
                 Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
+                Text( // Standard Text
                     text = uiState.user?.name ?: "User",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary // Explicit primary color for name
+                    color = MaterialTheme.colorScheme.primary
                 )
-
                 uiState.user?.email?.let { email ->
                     Spacer(modifier = Modifier.height(2.dp))
-                    Text(
+                    Text( // Standard Text
                         text = email,
-                        style = MaterialTheme.typography.bodySmall, // Slightly smaller for email
-                        // color = MaterialTheme.colorScheme.onSurfaceVariant (inherited)
+                        style = MaterialTheme.typography.bodySmall,
                         maxLines = 1
                     )
                 }
@@ -273,38 +183,127 @@ fun UserDashboardToast(uiState: DashboardScreenUiState) { // Renamed Preview to 
 
 @Preview(showBackground = true)
 @Composable
-fun UserDashboardToastPreview() { // Renamed from DashboardScreenPreview to be specific
+fun UserDashboardToastPreview() {
     AichoPaichoTheme {
         UserDashboardToast(
             uiState = DashboardScreenUiState(
-                user = User( // Mock user data
+                user = User(
+                    id = "user1",
                     name = "Alex Doe",
                     email = "alex.doe@example.com",
-                    photoUrl = " ".toUri() ,
-                    id = "df"
+                    photoUrl = null
                 )
             )
         )
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun DashboardContentPreview() { // Specific preview for DashboardContent
-    AichoPaichoTheme {
-        DashboardContent(
-            uiState = DashboardScreenUiState(
-                user =User(
-                    name = "Jane Doe",
-                    email = "jane.doe@example.com",
-                    photoUrl = "".toUri(),
-                    id = "df"
-                )
-            ),
-            onNavigateToAddTransaction = {},
-            onNavigateToViewTransactions = {},
-            onNavigateToSettings = {}
+fun DashboardContent( // Uses QuickActionButton from AppComponent.kt
+    uiState: DashboardScreenUiState,
+    onNavigateToAddTransaction: (() -> Unit)?,
+    onNavigateToViewTransactions: (() -> Unit)?,
+    onNavigateToSettings: (() -> Unit)?,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        UserDashboardToast(uiState)
+        Spacer(modifier = Modifier.height(24.dp))
+        Text( // Standard Text for section header
+            text = "Quick Actions",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(bottom = 12.dp, start = 8.dp, end = 8.dp)
         )
+        FlowRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            maxItemsInEachRow = 2 // Keeps the 2-item row structure
+        ) {
+            onNavigateToAddTransaction?.let { navigate ->
+                QuickActionButton( // Using QuickActionButton from AppComponent.kt
+                    text = "New Txn",
+                    onClick = navigate,
+                    contentDescription = "Add new Transaction",
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            onNavigateToViewTransactions?.let { navigate ->
+                QuickActionButton( // Using QuickActionButton from AppComponent.kt
+                    text = "View Txns",
+                    onClick = navigate,
+                    contentDescription = "View Transactions",
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            onNavigateToSettings?.let { navigate ->
+                QuickActionButton( // Using QuickActionButton from AppComponent.kt
+                    text = "Settings",
+                    onClick = navigate,
+                    contentDescription = "Open Settings",
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+        uiState.errorMessage?.let { error ->
+            Spacer(modifier = Modifier.height(16.dp))
+            Text( // Standard Text for error
+                text = error,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            )
+        }
     }
 }
 
+
+
+// NetBalanceCard is specific to Dashboard, so its M3 themed version remains here.
+// LoadingContent and NotSignedInContent are assumed to be used from AppComponent.kt, so their definitions are removed from here.
+@Composable
+fun NetBalanceCard(
+    summary: UserRecordSummary,
+    onNavigateToContactList: (String) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text("Overall Balance", style = MaterialTheme.typography.titleMedium) // Standard Text
+            Text( // Standard Text
+                text = "%.2f".format(summary.netTotal),
+                style = MaterialTheme.typography.displaySmall,
+                color = if (summary.netTotal >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+            )
+            Row(
+                horizontalArrangement = Arrangement.SpaceAround,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Total Lent", style = MaterialTheme.typography.labelMedium) // Standard Text
+                    Text("%.2f".format(summary.totalLent), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary) // Standard Text
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Total Borrowed", style = MaterialTheme.typography.labelMedium) // Standard Text
+                    Text("%.2f".format(summary.totalBorrowed), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.error) // Standard Text
+                }
+            }
+        }
+    }
+}

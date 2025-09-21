@@ -104,12 +104,12 @@ class ContactListViewModel @Inject constructor(
                 contact.name.uppercase().startsWith(selectedLetter.uppercase())
             }
         }
-
+       _uiState.value = _uiState.value.copy( availableLetters = getAvailableLetters(filteredContacts))
         return filteredContacts
     }
 
-    fun getAvailableLetters(type: String): List<String> {
-        return getContactsByType(type)
+    fun getAvailableLetters(contacts:List<Contact>): List<String> {
+        return contacts
             .map { it.name.firstOrNull()?.uppercase()?.toString() ?: "" }
             .filter { it.isNotBlank() }
             .distinct()
@@ -123,4 +123,9 @@ class ContactListViewModel @Inject constructor(
     private fun setErrorMessage(message: String) {
         _uiState.value = _uiState.value.copy(errorMessage = message, isLoading = false)
     }
+    fun clearErrorMessage()
+    {
+        _uiState.value = _uiState.value.copy(errorMessage = null)
+    }
+
 }
