@@ -12,11 +12,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -31,7 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
+// import androidx.compose.ui.res.colorResource // No longer needed
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -42,7 +42,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.aspiring_creators.aichopaicho.R
 import com.aspiring_creators.aichopaicho.ui.component.ButtonComponent
 import com.aspiring_creators.aichopaicho.ui.component.LogoTopBar
+import com.aspiring_creators.aichopaicho.ui.component.SnackbarComponent // Assuming SnackbarComponent is used by snackbarHostState
 import com.aspiring_creators.aichopaicho.ui.component.TextComponent
+import com.aspiring_creators.aichopaicho.ui.theme.AichoPaichoTheme // Added for Preview
 import com.aspiring_creators.aichopaicho.viewmodel.PermissionViewModel
 import kotlinx.coroutines.launch
 
@@ -57,7 +59,6 @@ fun PermissionScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val uiState by permissionViewModel.uiState.collectAsState()
 
-    // Track permission state
     var contactsPermissionGranted by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(
@@ -67,17 +68,14 @@ fun PermissionScreen(
         )
     }
 
-    // Update ViewModel when permission state changes
     LaunchedEffect(contactsPermissionGranted) {
         permissionViewModel.setPermissionGranted(contactsPermissionGranted)
     }
 
-    // Permission request launcher
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         contactsPermissionGranted = isGranted
-
         scope.launch {
             if (isGranted) {
                 snackbarHostState.showSnackbar("Contacts permission granted!")
@@ -91,9 +89,8 @@ fun PermissionScreen(
         }
     }
 
-    // Auto-navigate if permission is already granted
     LaunchedEffect(contactsPermissionGranted) {
-        if (contactsPermissionGranted) {
+        if (contactsPermissionGranted && !uiState.isLoading) { // Ensure not to navigate while already processing
             val result = permissionViewModel.grantPermissionAndProceed()
             if (result.isSuccess) {
                 onNavigateToDashboard()
@@ -102,52 +99,54 @@ fun PermissionScreen(
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = {
+            // Use your themed SnackbarComponent if you have one, or stick to Material's SnackbarHost
+            // For this example, assuming SnackbarComponent is set up to be themed
+            SnackbarComponent(snackbarHostState = snackbarHostState)
+        }
     ) { paddingValues ->
         Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
-            color = colorResource(R.color.appThemeColor)
+                .padding(paddingValues)
+                .padding(16.dp), // Added overall padding
+            color = MaterialTheme.colorScheme.background // Use theme background
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.Center
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
                 LogoTopBar(
-                    logo = R.drawable.logo_contacts,
+                    logo = R.drawable.logo_contacts, // Consider a theme-able icon if needed
                     title = stringResource(R.string.allow_contact_access)
                 )
 
-                Spacer(modifier = Modifier.size(70.dp))
+                Spacer(modifier = Modifier.size(60.dp)) // Adjusted Spacing
 
                 TextComponent(
                     value = stringResource(R.string.ask_contact_access),
-                    textSize = 30.sp,
-                    textColor = R.color.textColor
+                    textSize = 24.sp, // Adjusted size
+                    textAlign = TextAlign.Center,
+                    lineHeight = 30.sp
                 )
 
-                Spacer(modifier = Modifier.size(70.dp))
+                Spacer(modifier = Modifier.size(60.dp)) // Adjusted Spacing
 
-                // Show error message if any
                 uiState.errorMessage?.let { error ->
                     Text(
                         text = error,
                         color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(horizontal = 16.dp),
+                        modifier = Modifier.padding(bottom = 16.dp), // Add padding below error
                         textAlign = TextAlign.Center
                     )
-
-                    Spacer(modifier = Modifier.size(16.dp))
                 }
 
-                // Permission Button
                 ButtonComponent(
-                    logo = R.drawable.logo_contacts,
-                    text = if (contactsPermissionGranted) "Permission Already Granted" else "Give Contact Access",
+                    logo = R.drawable.logo_contacts, // Icon for contacts
+                    text = if (contactsPermissionGranted) "Permission Granted" else "Grant Contact Access",
                     onClick = {
                         when {
                             contactsPermissionGranted -> {
@@ -164,18 +163,18 @@ fun PermissionScreen(
                             }
                         }
                     },
-                    enabled = !uiState.isLoading
+                    enabled = !uiState.isLoading,
+                    modifier = Modifier.fillMaxWidth(0.8f) // Consistent button width
                 )
 
                 Spacer(modifier = Modifier.size(16.dp))
 
-                // Skip Button
                 ButtonComponent(
-                    logo = R.drawable.logo_skip,
+                    logo = R.drawable.logo_skip, // Icon for skip
                     text = "Skip for Now",
                     onClick = {
                         scope.launch {
-                            snackbarHostState.showSnackbar("You can grant permission later in settings")
+                            snackbarHostState.showSnackbar("You can grant permission later in settings.")
                             val result = permissionViewModel.skipPermissionAndProceed()
                             if (result.isSuccess) {
                                 onNavigateToDashboard()
@@ -183,35 +182,29 @@ fun PermissionScreen(
                         }
                     },
                     enabled = !uiState.isLoading,
-                    modifier = Modifier
-                        .padding(horizontal = 75.dp)
-                        .width(250.dp)
+                    modifier = Modifier.fillMaxWidth(0.8f) // Consistent button width
                 )
 
-                // Back Button (if provided)
                 onNavigateBack?.let { navigateBack ->
                     Spacer(modifier = Modifier.size(16.dp))
-
                     ButtonComponent(
-                        logo = R.drawable.logo_skip, // or use a back icon
-                      text =  "Back",
+                       vectorLogo = Icons.AutoMirrored.Default.ArrowBack,
+                        text = "Back",
                         onClick = navigateBack,
                         enabled = !uiState.isLoading,
-                        modifier = Modifier
-                            .padding(horizontal = 100.dp)
-                            .width(200.dp)
+                        modifier = Modifier.fillMaxWidth(0.8f) // Consistent button width
                     )
                 }
 
-                // Loading indicator
                 if (uiState.isLoading) {
+                    Spacer(modifier = Modifier.size(24.dp))
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator()
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary) // Use theme primary
                     }
                 }
             }
@@ -222,8 +215,10 @@ fun PermissionScreen(
 @Preview(showBackground = true)
 @Composable
 fun PermissionScreenPreview() {
-    PermissionScreen(
-        onNavigateToDashboard = {},
-        onNavigateBack = {}
-    )
+    AichoPaichoTheme {
+        PermissionScreen(
+            onNavigateToDashboard = {},
+            onNavigateBack = {}
+        )
+    }
 }

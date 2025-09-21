@@ -18,10 +18,10 @@ interface RecordDao {
     @Query("SELECT SUM(amount) FROM records WHERE typeId = :typeId AND isDeleted = 0")
     suspend fun getTotalByType(typeId: Int): Int
 
-    @Query("SELECT * FROM records WHERE isDeleted = 0 ORDER BY date DESC")
+    @Query("SELECT * FROM records WHERE isDeleted = 0 ORDER BY date ASC")
     fun getAllRecords(): Flow<List<Record>>
 
-    @Query("SELECT * FROM records WHERE date BETWEEN :startDate AND :endDate AND isDeleted = 0 ORDER BY date ASC")
+    @Query("SELECT * FROM records WHERE date BETWEEN :startDate AND :endDate AND isDeleted = 0 ORDER BY date DESC")
     fun getRecordsByDateRange(startDate: Long, endDate: Long): Flow<List<Record>>
 
     @Query("SELECT * FROM records WHERE id = :recordId AND isDeleted = 0")

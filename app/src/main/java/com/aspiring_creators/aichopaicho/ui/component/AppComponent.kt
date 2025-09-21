@@ -1,10 +1,5 @@
 package com.aspiring_creators.aichopaicho.ui.component
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,25 +11,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Create
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Label
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -49,13 +34,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -66,72 +48,84 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aspiring_creators.aichopaicho.R
+import com.aspiring_creators.aichopaicho.ui.theme.AichoPaichoTheme
 
 val crimsonTextFamily = FontFamily(
     Font(R.font.crimson_regular, FontWeight.Normal),
     Font(R.font.crimson_bold, FontWeight.Bold),
     Font(R.font.crimson_italic, FontWeight.Normal, FontStyle.Italic)
 )
+
 @Composable
-fun LogoTopBar(logo: Int, title: String)
-{
+fun LogoTopBar(logo: Int, title: String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
     ){
         Spacer(modifier = Modifier.size(36.dp))
         Icon(
-            painter = painterResource(id = logo)
-            , contentDescription = "Title",
-            tint = Color.Unspecified
+            painter = painterResource(id = logo),
+            contentDescription = "Logo",
+            tint = Color.Unspecified,
+            modifier = Modifier.size(90.dp)
         )
         Spacer(modifier = Modifier.size(36.dp))
+        Text(
+            text = title,
+            style = MaterialTheme.typography.headlineLarge,
+            fontFamily = crimsonTextFamily,
+            modifier = Modifier.padding(start = 8.dp)
 
-       TextComponent("AichoPaicho", textSize = 35.sp)
-
+        )
     }
 }
+
 @Preview(showBackground = true)
 @Composable
-fun LogoTopBarPreview()
-{
-    LogoTopBar(logo = R.drawable.logo_aichopaicho, title = "Aicho Paicho")
+fun LogoTopBarPreview() {
+    AichoPaichoTheme {
+        LogoTopBar(logo = R.drawable.logo_aichopaicho, title = "Aicho Paicho")
+    }
 }
 
 @Composable
 fun TextComponent(
     value: String,
-    textSize: TextUnit = 12.sp,
-    textColor: Int = R.color.textColor,
-    lineHeight: TextUnit = TextUnit.Unspecified
+    modifier: Modifier = Modifier, // Added modifier parameter
+    style: TextStyle = MaterialTheme.typography.bodyLarge, // Use TextStyle
+    color: Color = MaterialTheme.colorScheme.onSurface,
+    textAlign: TextAlign = TextAlign.Center,
+    lineHeight: TextUnit = TextUnit.Unspecified,
+    textSize: TextUnit = TextUnit.Unspecified
 ) {
-
-
-
-
     Text(
         text = value,
-        modifier = Modifier.padding(10.dp),
+        modifier = modifier.padding(10.dp),
         fontFamily = crimsonTextFamily,
-        color = colorResource(textColor),
-        fontSize = textSize,
-        fontWeight = FontWeight.Normal,
-        textAlign = TextAlign.Center,
-        lineHeight = lineHeight
+        color = color,
+        style = style,
+        textAlign = textAlign,
+        lineHeight = lineHeight,
+        fontSize = textSize
     )
 }
+
 @Preview(showBackground = true)
 @Composable
-fun TextComponentPreview()
-{
-    TextComponent(value = "Welcome to Aicho Paicho dfg dfg", textSize = 27.sp)
+fun TextComponentPreview() {
+     AichoPaichoTheme {
+        TextComponent(value = "Welcome to Aicho Paicho dfg dfg", style = MaterialTheme.typography.headlineSmall)
+    }
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ButtonComponent(
     modifier: Modifier = Modifier,
-    logo: Int,
+    logo: Int? = null,
+    vectorLogo: ImageVector? = null,
     text: String? = null,
     onClick: () -> Unit,
     enabled: Boolean = true
@@ -141,29 +135,37 @@ fun ButtonComponent(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
-         colors = ButtonDefaults.buttonColors(
-             containerColor = colorResource(R.color.buttonColor),
-//             contentColor = colorResource(R.color.black)
-         ),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        ),
         enabled = enabled ,
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp) // Control padding inside the button
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                painter = painterResource(logo),
-                contentDescription = "$text logo",
-                tint = Color.Unspecified,
+            if (logo != null && logo != 0) {
+                Icon(
+                    painter = painterResource(id = logo),
+                    contentDescription = text?.let { "$it logo"} ?: "Button logo",
+                    modifier = Modifier.size(24.dp)
+                )
+            } else if (vectorLogo != null) {
+                Icon(
+                   imageVector = vectorLogo,
+                    contentDescription = text?.let { "$it logo"} ?: "Button vector logo",
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            if(logo != null || vectorLogo != null) Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
 
-                modifier = Modifier.size(28.dp)
-            )
-            Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
             if (text != null) {
-                TextComponent(
-                    value = text,
-                    textSize = 20.sp,
-                    textColor = R.color.black,
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.labelLarge, // M3 style for button text
+                    fontFamily = crimsonTextFamily // Keep custom font if desired
+                    // color = MaterialTheme.colorScheme.onPrimary will be inherited
                 )
             }
         }
@@ -172,59 +174,57 @@ fun ButtonComponent(
 
 @Preview(showBackground = true)
 @Composable
-fun ButtonComponentPreview()
-{
-    ButtonComponent(
-        logo = R.drawable.logo_google, text = "Sign in with Google",
-        onClick = {},
-    )
+fun ButtonComponentPreview() {
+    AichoPaichoTheme {
+        ButtonComponent(
+            logo = R.drawable.logo_google, text = "Sign in with Google",
+            onClick = {}
+        )
+    }
 }
 
-
-
 @Composable
-fun QuickActionButton(
+fun QuickActionButton( // This is a FAB
     onClick: () -> Unit,
     contentDescription: String?,
     modifier: Modifier = Modifier,
-    text: String // Optional text for Extended FAB
+    text: String
 ) {
-        // Use ExtendedFloatingActionButton if you want text next to the icon
         FloatingActionButton(
             onClick = onClick,
             modifier = modifier,
-            containerColor = MaterialTheme.colorScheme.primaryContainer, // Or your custom color
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
         ) {
-            Row()
+            Row(modifier = Modifier.padding(horizontal = 16.dp)) // Add padding for text inside FAB
             {
                 Text(
-                    text = "  $text",
+                    text = text, // Removed leading spaces, padding handles it
                     textAlign = TextAlign.Center,
-                    fontFamily = crimsonTextFamily,
-                    fontStyle = FontStyle.Normal,
-                    fontSize = 21.sp,
-                    maxLines = 2,
-                    modifier = Modifier.padding(5.dp)
+                    fontFamily = crimsonTextFamily, // Keep custom font
+                    style = MaterialTheme.typography.labelLarge, // M3 style for FAB text
+                    maxLines = 2, // Keep maxLines
                 )
             }
         }
-
 }
 
 
 @Preview(showBackground = true)
 @Composable
 fun ExtendedQuickActionButtonPreview() {
-    QuickActionButton(
-        onClick = { /* Handle action */ },
-        contentDescription = "Add new item",
-        text = "Create \n Item",
-        modifier = Modifier.padding(2.dp)
-    )
+    AichoPaichoTheme {
+        QuickActionButton(
+            onClick = { /* Handle action */ },
+            contentDescription = "Add new item",
+            text = "Create\nItem", // Keep multi-line text
+            modifier = Modifier.padding(2.dp)
+        )
+    }
 }
+
 @Composable
-fun SnackbarComponent(
+fun SnackbarComponent( // Looks good, uses M3 theme roles correctly
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier
 ) {
@@ -233,16 +233,16 @@ fun SnackbarComponent(
         modifier = modifier,
     ) { data ->
         Snackbar(
-            containerColor = colorResource(R.color.buttonColor),
-            contentColor = colorResource(R.color.black),
+            containerColor = MaterialTheme.colorScheme.inverseSurface,
+            contentColor = MaterialTheme.colorScheme.inverseOnSurface,
             actionOnNewLine = true,
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(8.dp), // M3 uses typically smaller corner radius (e.g. 4.dp or 8.dp)
             action = {
                 data.visuals.actionLabel?.let { actionLabel ->
                     TextButton(onClick = { data.performAction() }) {
                         Text(
                             text = actionLabel,
-                            color = colorResource(R.color.black)
+                            color = MaterialTheme.colorScheme.inversePrimary // Correct for action
                         )
                     }
                 }
@@ -260,14 +260,15 @@ fun LoadingContent(text: String) {
         contentAlignment = Alignment.Center
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp) // Added spacing
         ) {
-            CircularProgressIndicator()
-            Spacer(modifier = Modifier.height(16.dp))
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            // Spacer(modifier = Modifier.height(16.dp)) // Handled by Arrangement.spacedBy
             TextComponent(
                 value = text,
-                textColor = R.color.black,
-                textSize = 16.sp
+                style = MaterialTheme.typography.bodyLarge, // Use M3 typography
+                color = MaterialTheme.colorScheme.onSurface // Explicitly use onSurface or rely on TextComponent's default
             )
         }
     }
@@ -275,9 +276,10 @@ fun LoadingContent(text: String) {
 
 @Preview(showBackground = true)
 @Composable
-fun LoadingContextPreview()
-{
-    LoadingContent("Dashboard Screen...")
+fun LoadingContextPreview() {
+    AichoPaichoTheme {
+        LoadingContent("Dashboard Screen...")
+    }
 }
 
 @Composable
@@ -289,16 +291,14 @@ fun LoadingContextPreview()
         contentAlignment = Alignment.Center
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp) // Added spacing
         ) {
             TextComponent(
                 value = "You are Not Signed In",
-                textColor = R.color.black,
-                textSize = 30.sp
+                style = MaterialTheme.typography.headlineSmall, // Use M3 typography
+                color = MaterialTheme.colorScheme.onSurface // Explicitly use onSurface or rely on TextComponent's default
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             onSignOut?.let { signOut ->
                 ButtonComponent(
                     logo = R.drawable.logo_sign_in,
@@ -312,9 +312,10 @@ fun LoadingContextPreview()
 
 @Preview(showBackground = true)
 @Composable
-fun NotSignedInContentPreview()
-{
-    NotSignedInContent(onSignOut = {})
+fun NotSignedInContentPreview() {
+    AichoPaichoTheme {
+        NotSignedInContent(onSignOut = {})
+    }
 }
 
 @Composable
@@ -325,35 +326,27 @@ fun LabelComponent(
 ) {
     Surface(
         modifier = modifier,
-        shape = MaterialTheme.shapes.medium,
+        shape = MaterialTheme.shapes.medium, // M3 shape
         color = MaterialTheme.colorScheme.secondaryContainer,
         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
     ) {
         Text(
             text = text,
             modifier = Modifier.padding(contentPadding),
-            style = MaterialTheme.typography.labelLarge,
-            fontFamily = crimsonTextFamily,
-            fontStyle = FontStyle.Normal,
-            fontWeight = FontWeight.Bold,
-            fontSize = 22.sp
+            style = MaterialTheme.typography.labelLarge.copy( // Start with M3 style
+                fontFamily = crimsonTextFamily, // Apply custom font
+                fontWeight = FontWeight.Bold // Override fontWeight if needed for this specific label
+            )
         )
     }
 }
 
-
 @Preview
 @Composable
-fun LabelComponentView()
-{
-    LabelComponent("Name")
-}
-
-object TypeConstants{
-    const val TYPE_LENT = "Lent"
-    const val LENT_ID = 1
-    const val TYPE_BORROWED = "Borrowed"
-    const val BORROWED_ID = 0
+fun LabelComponentView() {
+    AichoPaichoTheme {
+        LabelComponent("Name")
+    }
 }
 
 
@@ -369,7 +362,7 @@ fun SegmentedLentBorrowedToggle(
     Box(
         modifier = modifier
             .background(
-                Color.Gray.copy(alpha = 0.2f),
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), // Use surfaceVariant
                 RoundedCornerShape(8.dp)
             )
             .padding(4.dp)
@@ -392,7 +385,7 @@ fun SegmentedLentBorrowedToggle(
             ) {
                 Text(
                     text = TypeConstants.TYPE_LENT,
-                    color = if (isLent) Color.White else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    color = if (isLent) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f), // Use onPrimary or onSurface
                     fontWeight = if (isLent) FontWeight.Bold else FontWeight.Normal,
                     fontSize = 16.sp
                 )
@@ -415,7 +408,7 @@ fun SegmentedLentBorrowedToggle(
             ) {
                 Text(
                     text = TypeConstants.TYPE_BORROWED,
-                    color = if (!isLent) Color.White else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    color = if (!isLent) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f), // Use onPrimary or onSurface
                     fontWeight = if (!isLent) FontWeight.Bold else FontWeight.Normal,
                     fontSize = 16.sp
                 )
@@ -428,10 +421,33 @@ fun SegmentedLentBorrowedToggle(
 @Composable
 fun SegmentedLentBorrowedTogglePreview() {
     var isLent by remember { mutableStateOf("") }
-    SegmentedLentBorrowedToggle(
-        onToggle = { isLent =  it },
-        modifier = Modifier.fillMaxWidth()
-    )
-    Spacer(modifier = Modifier.size(22.dp))
-    Text(text = " Value is:- $isLent")
+    com.aspiring_creators.aichopaicho.ui.theme.AichoPaichoTheme {
+        SegmentedLentBorrowedToggle(
+            onToggle = { isLent =  it },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.size(22.dp))
+        Text(text = " Value is:- $isLent")
+    }
 }
+
+
+
+
+
+
+
+object TypeConstants{
+    const val TYPE_LENT = "Lent"
+    const val LENT_ID = 1
+    const val TYPE_BORROWED = "Borrowed"
+    const val BORROWED_ID = 0
+    fun getTypeName(value: Int): String {
+        return when(value) {
+            LENT_ID -> TYPE_LENT
+            BORROWED_ID -> TYPE_BORROWED
+            else -> "Unknown" // Added default case
+        }
+    }
+}
+

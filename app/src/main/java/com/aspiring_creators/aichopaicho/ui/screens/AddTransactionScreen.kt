@@ -1,5 +1,6 @@
 package com.aspiring_creators.aichopaicho.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement // Added
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,10 +9,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+// import androidx.compose.foundation.layout.width // Not strictly needed for Spacer, size can be used
+import androidx.compose.material.icons.Icons // Added
+import androidx.compose.material.icons.automirrored.filled.ArrowBack // Added
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon // Added
+import androidx.compose.material3.MaterialTheme // Added
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
+// import androidx.compose.material3.SnackbarHost // Replaced
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -19,246 +24,231 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+// import androidx.compose.runtime.rememberCoroutineScope // Not used for snackbar here
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.aspiring_creators.aichopaicho.R
+// import com.aspiring_creators.aichopaicho.R // For R.drawable.logo_back, R.color.textColor (will be removed)
 import com.aspiring_creators.aichopaicho.ui.component.AmountInputField
-import com.aspiring_creators.aichopaicho.ui.component.ButtonComponent
+import com.aspiring_creators.aichopaicho.ui.component.ButtonComponent // Keep for now, but will change to IconButton
 import com.aspiring_creators.aichopaicho.ui.component.ContactPickerField
 import com.aspiring_creators.aichopaicho.ui.component.DateInputField
 import com.aspiring_creators.aichopaicho.ui.component.LabelComponent
 import com.aspiring_creators.aichopaicho.ui.component.MultiLineTextInputField
 import com.aspiring_creators.aichopaicho.ui.component.QuickActionButton
-import com.aspiring_creators.aichopaicho.ui.component.SegmentedLentBorrowedToggle
+import com.aspiring_creators.aichopaicho.ui.component.SnackbarComponent // Added
 import com.aspiring_creators.aichopaicho.ui.component.TextComponent
 import com.aspiring_creators.aichopaicho.ui.component.TypeConstants
+import com.aspiring_creators.aichopaicho.ui.theme.AichoPaichoTheme // Added for preview
 import com.aspiring_creators.aichopaicho.viewmodel.AddTransactionViewModel
 import com.aspiring_creators.aichopaicho.viewmodel.data.AddTransactionUiEvents
+import androidx.compose.material3.IconButton // Added for back button
+import androidx.compose.material3.OutlinedButton // Added for Cancel button
+import androidx.compose.material3.ButtonDefaults // Added for Cancel button theming
+import androidx.compose.material3.Text
+import com.aspiring_creators.aichopaicho.ui.component.SegmentedLentBorrowedToggle
 
 
 @Composable
 fun AddTransactionScreen(
-    onNavigateBack:  (() -> Unit)? = null,
+    onNavigateBack: (() -> Unit)? = null,
     addTransactionViewModel: AddTransactionViewModel = hiltViewModel()
 ) {
-
     val uiState by addTransactionViewModel.uiState.collectAsState()
-
-    val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Handle snackbar messages reactively
     LaunchedEffect(uiState.errorMessage) {
         uiState.errorMessage?.let { errorMessage ->
+            addTransactionViewModel.clearErrorMessage() // Clear after showing
             snackbarHostState.showSnackbar(errorMessage)
         }
     }
 
     LaunchedEffect(uiState.submissionSuccessful) {
         if (uiState.submissionSuccessful) {
+            addTransactionViewModel.clearSubmissionSuccessFlag()
             snackbarHostState.showSnackbar("Transaction added successfully")
         }
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarComponent(snackbarHostState = snackbarHostState) } // Themed snackbar
     ) { paddingValues ->
         Surface(
-            modifier = Modifier.fillMaxSize().padding(paddingValues)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            color = MaterialTheme.colorScheme.background // Use theme background
         ) {
             Column(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxSize() // Fill the available size
+                    .padding(16.dp), // Add overall padding for the content
+                verticalArrangement = Arrangement.spacedBy(12.dp) // Spacing between rows
             ) {
 
                 Row(
-                    modifier = Modifier.padding(2.dp),
-                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    modifier = Modifier.fillMaxWidth(), // Allow title to take full width
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     onNavigateBack?.let { navigateBack ->
-                        Spacer(modifier = Modifier.size(2.dp))
-                        ButtonComponent(
-                            logo = R.drawable.logo_back, // or use a back icon
+                        IconButton( // Using IconButton for better semantics and theming
                             onClick = navigateBack,
-//                        enabled = !uiState.isLoading,
-                            modifier = Modifier
-                                .padding(horizontal = 3.dp)
-                                .width(50.dp)
-                        )
+                            enabled = !uiState.isLoading
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = MaterialTheme.colorScheme.primary // Themed icon
+                            )
+                        }
+                        Spacer(modifier = Modifier.size(8.dp)) // Reduced spacer
                     }
 
                     TextComponent(
                         value = "Add New Transaction",
-                        textSize = 30.sp,
-                        textColor = R.color.textColor
+                        textSize = 24.sp,
+
                     )
                 }
 
                 // Type
                 Row(
-                    modifier = Modifier.padding(2.dp).padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-
-                    LabelComponent(
-                        text = "Type"
-                    )
-                    Spacer(modifier = Modifier.size(22.dp))
-
-                    LaunchedEffect(Unit) {
-                        addTransactionViewModel.onEvent(
-                            AddTransactionUiEvents.TypeSelected(TypeConstants.TYPE_LENT) // true = Lent | false = Borrowed
-                        )
-                    }
-
+                    LabelComponent(text = "Type")
+                    Spacer(modifier = Modifier.size(16.dp)) // Consistent spacing
                     SegmentedLentBorrowedToggle(
-                        onToggle = {
+                        onToggle = { type ->
                             addTransactionViewModel.onEvent(
-                                AddTransactionUiEvents.TypeSelected(it)
+                                AddTransactionUiEvents.TypeSelected(type)
                             )
                         }
                     )
                 }
+                // Initialize type selection
+                LaunchedEffect(Unit) {
+                    if (uiState.type == null) { // Initialize only if not already set
+                        addTransactionViewModel.onEvent(
+                            AddTransactionUiEvents.TypeSelected(TypeConstants.TYPE_LENT)
+                        )
+                    }
+                }
+
 
                 // Name
-                Row(
-                    modifier = Modifier.padding(2.dp).padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                )
-                {
-                    LabelComponent(
-                        text = "Name"
-                    )
-                    Spacer(modifier = Modifier.size(12.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    LabelComponent(text = "Name")
+                    Spacer(modifier = Modifier.size(16.dp))
                     ContactPickerField(
-                        label = "Contact Name",
-                        selectedContact = uiState.contact, // Pass the selected contact to clear it
+                        label = "Contact Name", // Placeholder for OutlinedTextField
+                        selectedContact = uiState.contact,
                         onContactSelected = { contact ->
                             addTransactionViewModel.onEvent(
                                 AddTransactionUiEvents.ContactSelected(contact)
                             )
-                        }
+                        },
+                        modifier = Modifier.weight(1f) // Allow field to take available space
                     )
                 }
-                // Amount
-                Row(
-                    modifier = Modifier.padding(2.dp).padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                )
-                {
-                    LabelComponent(
-                        text = "Amount"
-                    )
 
-                    Spacer(modifier = Modifier.size(12.dp))
+                // Amount
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    LabelComponent(text = "Amount")
+                    Spacer(modifier = Modifier.size(16.dp))
                     AmountInputField(
-                        label = "Amount",
-                        value = uiState.amount?.toString() ?: "", // Pass the current value to clear it
-                        onAmountTextChange = {
+                        label = "Amount", // Placeholder
+                        value = uiState.amount?.toString() ?: "",
+                        onAmountTextChange = { amountStr ->
                             addTransactionViewModel.onEvent(
-                                AddTransactionUiEvents.AmountEntered(it)
+                                AddTransactionUiEvents.AmountEntered(amountStr)
                             )
                         },
+                        isError = uiState.errorMessage != null, // Show error if present
+                        errorMessage = uiState.errorMessage,
+                        modifier = Modifier.weight(1f)
                     )
                 }
-                Row(
-                    modifier = Modifier.padding(2.dp).padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                )
-                {
-                    LabelComponent(
-                        text = "Date"
-                    )
 
-                    Spacer(modifier = Modifier.size(12.dp))
-
+                // Date
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    LabelComponent(text = "Date")
+                    Spacer(modifier = Modifier.size(16.dp))
                     DateInputField(
-                        label = "Date",
-                        onDateSelected = {
+                        label = "Date", // Placeholder
+                        selectedDate = uiState.date,
+                        onDateSelected = { date ->
                             addTransactionViewModel.onEvent(
-                                AddTransactionUiEvents.DateEntered(it!!)
+                                AddTransactionUiEvents.DateEntered(date ?: System.currentTimeMillis()) // Provide default if null
                             )
-                        }, // Pass the selected date
+                        },
                         initializeWithCurrentDate = true,
-                        selectedDate = uiState.date
+                        modifier = Modifier.weight(1f)
                     )
                 }
-                Row(
-                    modifier = Modifier.padding(2.dp).padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                )
-                {
-                    LabelComponent(
-                        text = "Description"
-                    )
 
-                    Spacer(modifier = Modifier.size(12.dp))
-
+                // Description
+                Row(verticalAlignment = Alignment.Top) { // Align label to top for multiline
+                    LabelComponent(text = "Description")
+                    Spacer(modifier = Modifier.size(16.dp))
                     MultiLineTextInputField(
-                        label = "Description",
-                        value = uiState.description ?: "", // Pass the current value to clear it
-                        onValueChange = {
+                        label = "Description (Optional)", // Placeholder
+                        value = uiState.description ?: "",
+                        onValueChange = { description ->
                             addTransactionViewModel.onEvent(
-                                AddTransactionUiEvents.DescriptionEntered(it)
+                                AddTransactionUiEvents.DescriptionEntered(description)
                             )
-                        }
+                        },
+                        modifier = Modifier.weight(1f)
                     )
                 }
 
+                Spacer(modifier = Modifier.weight(1f)) // Push buttons to bottom
 
-                Spacer(modifier = Modifier.size(55.dp))
                 if (uiState.isLoading) {
                     Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator()
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary) // Themed
                     }
-                }
-                QuickActionButton(
-                    text = "Save",
-                    onClick = {
-                        if(!uiState.isLoading) {
-                            addTransactionViewModel.onEvent(
-                                AddTransactionUiEvents.Submit
-                            )
-                        }
-                    },
-                    contentDescription = "Save Button",
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-
-                Spacer(modifier = Modifier.size(22.dp))
-
-                onNavigateBack?.let { navigateBack ->
-                    Spacer(modifier = Modifier.size(2.dp))
+                } else {
                     QuickActionButton(
-                        text = "Cancel",
+                        text = "Save Transaction",
                         onClick = {
-                            if (!uiState.isLoading) {
-                                navigateBack()
-                            }
+                            addTransactionViewModel.onEvent(AddTransactionUiEvents.Submit)
                         },
-                        contentDescription = "Cancel Button",
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                        contentDescription = "Save Transaction Button",
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
-            }
 
+                Spacer(modifier = Modifier.size(8.dp)) // Spacing between buttons
+
+                onNavigateBack?.let { navigateBack ->
+                    OutlinedButton( // Using OutlinedButton for secondary action
+                        onClick = {
+                            if (!uiState.isLoading) navigateBack()
+                        },
+                        modifier = Modifier.fillMaxWidth(), // Make button full width
+                        enabled = !uiState.isLoading,
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary) //Themed
+                    ) {
+                        Text("Cancel")
+                    }
+                }
+            }
         }
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
-fun AddTransactionPreview()
-{
-    AddTransactionScreen(onNavigateBack = {})
+fun AddTransactionPreview() {
+    AichoPaichoTheme { // Wrapped in theme
+        AddTransactionScreen(onNavigateBack = {})
+    }
 }

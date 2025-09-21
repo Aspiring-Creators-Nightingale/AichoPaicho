@@ -1,6 +1,6 @@
 package com.aspiring_creators.aichopaicho.ui.component
 
-import android.icu.util.Calendar
+// import android.icu.util.Calendar // Not directly used in M3 DatePicker version
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.defaultMinSize
@@ -10,14 +10,17 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults // Added
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+// import androidx.compose.material3.OutlinedTextFieldDefaults // For custom colors if needed
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.ButtonDefaults // Added
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,10 +30,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+// import androidx.compose.ui.platform.LocalContext // Not used
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.aspiring_creators.aichopaicho.ui.theme.AichoPaichoTheme // Added for previews
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -39,31 +43,31 @@ import java.util.Locale
 fun StringInputField(
     label: String,
     onValueChange: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    value: String // Added value parameter for state hoisting
 ) {
-    var currentValue by remember {
-        mutableStateOf("")
-    }
     OutlinedTextField(
-        value = currentValue,
-        onValueChange = {
-            currentValue = it
-            onValueChange(it)
-                        },
+        value = value,
+        onValueChange = onValueChange, // Directly use onValueChange
         label = { Text(label) },
         modifier = modifier.fillMaxWidth(),
         singleLine = true
+        // Colors will be inherited from MaterialTheme
     )
 }
 
 @Preview(showBackground = true, name = "String Input Field")
 @Composable
 fun StringInputFieldPreview() {
-    Column(modifier = Modifier.padding(16.dp)) {
-        StringInputField(
-            label = "Name",
-            onValueChange = { it }
-        )
+    var text by remember { mutableStateOf("Test Text") }
+    AichoPaichoTheme { // Use AichoPaichoTheme
+        Column(modifier = Modifier.padding(16.dp)) {
+            StringInputField(
+                label = "Name",
+                value = text,
+                onValueChange = { text = it }
+            )
+        }
     }
 }
 
@@ -76,26 +80,22 @@ fun AmountInputField(
     errorMessage: String? = null,
     value: String
 ) {
-    var currentValue by remember(value) {
-        mutableStateOf(value)
-    }
+    // currentValue is now driven by the 'value' parameter
     Column(modifier = modifier) {
         OutlinedTextField(
-            value = currentValue,
-            onValueChange = {
-                currentValue = it
-                onAmountTextChange(it)
-            },
+            value = value,
+            onValueChange = onAmountTextChange, // Directly use onAmountTextChange
             label = { Text(label) },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
             isError = isError
+            // Colors will be inherited from MaterialTheme
         )
         if (isError && errorMessage != null) {
             Text(
                 text = errorMessage,
-                color = MaterialTheme.colorScheme.error,
+                color = MaterialTheme.colorScheme.error, // This is correct
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(start = 16.dp, top = 4.dp)
             )
@@ -110,15 +110,17 @@ fun AmountInputFieldPreview() {
     val amountInt = amountInputText.toIntOrNull()
     val isError = amountInputText.isNotEmpty() && amountInt == null
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        AmountInputField(
-            label = "Transaction Amount",
-            onAmountTextChange = {  it },
-            isError = isError,
-            errorMessage = if (isError) "Please enter a valid number" else null,
-            value = amountInputText
-        )
-        Text(text = "Parsed Int: ${amountInt ?: "Invalid"}", modifier = Modifier.padding(top = 8.dp))
+    AichoPaichoTheme { // Use AichoPaichoTheme
+        Column(modifier = Modifier.padding(16.dp)) {
+            AmountInputField(
+                label = "Transaction Amount",
+                value = amountInputText,
+                onAmountTextChange = { amountInputText = it },
+                isError = isError,
+                errorMessage = if (isError) "Please enter a valid number" else null
+            )
+            Text(text = "Parsed Int: ${amountInt ?: "Invalid"}", modifier = Modifier.padding(top = 8.dp))
+        }
     }
 }
 
@@ -129,83 +131,20 @@ fun AmountInputFieldErorPreview() {
     val amountInt = amountInputText.toIntOrNull()
     val isError = amountInputText.isNotEmpty() && amountInt == null
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        AmountInputField(
-            label = "Transaction Amount",
-            onAmountTextChange = {  it },
-            isError = isError,
-            errorMessage = if (isError) "Please enter a valid number" else null,
-            value = amountInputText
-        )
-        Text(text = "Parsed Int: ${amountInt ?: "Invalid"}", modifier = Modifier.padding(top = 8.dp))
+    AichoPaichoTheme { // Use AichoPaichoTheme
+        Column(modifier = Modifier.padding(16.dp)) {
+            AmountInputField(
+                label = "Transaction Amount",
+                value = amountInputText,
+                onAmountTextChange = { amountInputText = it },
+                isError = isError,
+                errorMessage = if (isError) "Please enter a valid number" else null
+            )
+            Text(text = "Parsed Int: ${amountInt ?: "Invalid"}", modifier = Modifier.padding(top = 8.dp))
+        }
     }
 }
 
-/*@Composable
-fun DateInputField(
-    label: String,
-    onDateSelected: (Long?) -> Unit,
-    modifier: Modifier = Modifier,
-    initializeWithCurrentDate: Boolean = false,
-    selectedDate: Long?
-) {
-    var selectedTimestamp by remember(selectedDate) {
-        mutableStateOf(selectedDate)
-    }
-    var currentDate by remember { mutableStateOf("") }
-
-    val context = LocalContext.current
-    val calendar = Calendar.getInstance()
-
-    LaunchedEffect(initializeWithCurrentDate) {
-        if (initializeWithCurrentDate && selectedTimestamp == null) {
-            val now = System.currentTimeMillis()
-            selectedTimestamp = now
-            onDateSelected(now)
-        }
-    }
-
-    selectedTimestamp?.let {
-        calendar.timeInMillis = it
-        val dateFormatter = SimpleDateFormat("dd MMMM yyyy", java.util.Locale.getDefault())
-        currentDate = dateFormatter.format(Date(it))
-    }
-
-    val showDatePicker = {
-        android.app.DatePickerDialog(
-            context,
-            { _: android.widget.DatePicker, year: Int, month: Int, dayOfMonth: Int ->
-                val selectedCalendar = Calendar.getInstance()
-                selectedCalendar.set(year, month, dayOfMonth)
-                val millis = selectedCalendar.timeInMillis
-                selectedTimestamp = millis
-                onDateSelected(millis)
-            },
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
-        ).show()
-    }
-
-    Column(modifier = modifier) {
-        OutlinedTextField(
-            value = currentDate,
-            onValueChange = { *//* No manual text input *//* },
-            label = { Text(label) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { showDatePicker() },
-            readOnly = true,
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Filled.DateRange,
-                    contentDescription = "Select Date",
-                    modifier = Modifier.clickable { showDatePicker() }
-                )
-            },
-        )
-    }
-}*/
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -218,15 +157,11 @@ fun DateInputField(
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
-    val initialDisplayMonthMillis = selectedDate ?: if (initializeWithCurrentDate) System.currentTimeMillis() else null
-
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = selectedDate,
-//        initialDisplayMonthMillis = initialDisplayMonthMillis
+        initialSelectedDateMillis = selectedDate ?: if (initializeWithCurrentDate) System.currentTimeMillis() else null
     )
 
-    // Formatted date string for display in the TextField
-    val formattedDateText by remember(selectedDate) {
+    val formattedDateText by remember(selectedDate) { // Re-calculate when selectedDate changes externally
         derivedStateOf {
             selectedDate?.let {
                 val dateFormatter = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
@@ -238,8 +173,10 @@ fun DateInputField(
     LaunchedEffect(initializeWithCurrentDate, selectedDate) {
         if (initializeWithCurrentDate && selectedDate == null) {
             val now = System.currentTimeMillis()
-            datePickerState.selectedDateMillis = now
             onDateSelected(now)
+        }
+        if (selectedDate != datePickerState.selectedDateMillis) {
+             datePickerState.selectedDateMillis = selectedDate
         }
     }
 
@@ -247,24 +184,41 @@ fun DateInputField(
     Column(modifier = modifier) {
         OutlinedTextField(
             value = formattedDateText,
-            onValueChange = { /* Read-only, value changed by picker */ },
+            onValueChange = { },
             label = { Text(label) },
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable(onClick = { showDialog = true }), // Open dialog on click
+                .clickable(onClick = { showDialog = true }),
             readOnly = true,
             trailingIcon = {
-                IconButton(onClick = { showDialog = true }) { // Also open dialog on icon click
+                IconButton(onClick = { showDialog = true }) {
                     Icon(
                         imageVector = Icons.Filled.DateRange,
                         contentDescription = "Select Date"
                     )
                 }
             },
+            // Colors will be inherited from MaterialTheme
         )
     }
 
     if (showDialog) {
+        val dialogColors = DatePickerDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            headlineContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            weekdayContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            dayContentColor = MaterialTheme.colorScheme.onSurface,
+            disabledDayContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+            selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
+            disabledSelectedDayContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
+            selectedDayContainerColor = MaterialTheme.colorScheme.primary,
+            todayContentColor = MaterialTheme.colorScheme.primary,
+            todayDateBorderColor = MaterialTheme.colorScheme.primary,
+            dayInSelectionRangeContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            dayInSelectionRangeContainerColor = MaterialTheme.colorScheme.primaryContainer
+        )
+
         DatePickerDialog(
             onDismissRequest = { showDialog = false },
             confirmButton = {
@@ -272,39 +226,63 @@ fun DateInputField(
                     onClick = {
                         showDialog = false
                         onDateSelected(datePickerState.selectedDateMillis)
-                    }
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary) // Themed
                 ) {
                     Text("OK")
                 }
             },
             dismissButton = {
                 TextButton(
-                    onClick = { showDialog = false }
+                    onClick = { showDialog = false },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onSurfaceVariant) // Themed
                 ) {
                     Text("Cancel")
                 }
-            }
+            },
+            colors = dialogColors // Apply themed dialog colors
         ) {
             DatePicker(
                 state = datePickerState,
+                colors = dialogColors // Apply themed picker colors as well
             )
         }
     }
 }
 
 
-
 @Preview(showBackground = true, name = "Date Input Field - Empty")
 @Composable
 fun DateInputFieldPreviewEmpty() {
     var date: Long? by remember { mutableStateOf(null) }
-    MaterialTheme {
+    AichoPaichoTheme { // Use AichoPaichoTheme
         Column(modifier = Modifier.padding(16.dp)) {
             DateInputField(
                 label = "Transaction Date",
-                onDateSelected = { it },
-                initializeWithCurrentDate = true,
-                selectedDate = date
+                selectedDate = date,
+                onDateSelected = { date = it },
+                initializeWithCurrentDate = true
+            )
+            Text(
+                text = "Selected: ${date?.let { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(it)) } ?: "None"}",
+                modifier = Modifier.padding(top = 8.dp),
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Date Input Field - Preselected")
+@Composable
+fun DateInputFieldPreviewPreselected() {
+    var date: Long? by remember { mutableStateOf(System.currentTimeMillis() - 86400000 * 5) } // 5 days ago
+    AichoPaichoTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            DateInputField(
+                label = "Transaction Date",
+                selectedDate = date,
+                onDateSelected = { date = it },
+                initializeWithCurrentDate = false // Do not override preselected
             )
             Text(
                 text = "Selected: ${date?.let { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(it)) } ?: "None"}",
@@ -325,19 +303,13 @@ fun MultiLineTextInputField(
     maxLines: Int = 5,
     value: String
 ) {
-    var currentValue by remember(value) {
-        mutableStateOf(value)
-    }
-    OutlinedTextField(
-        value = currentValue,
-        onValueChange = {
-            currentValue = it
-            onValueChange(it)
-                        },
+     OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
         label = { Text(label) },
         modifier = modifier
             .fillMaxWidth()
-            .defaultMinSize(minHeight = (minLines * 24).dp), // Approximate height based on lines
+            .defaultMinSize(minHeight = (minLines * 24).dp),
         maxLines = maxLines
     )
 }
@@ -346,16 +318,19 @@ fun MultiLineTextInputField(
 @Composable
 fun MultiLineTextInputFieldPreview() {
     var notes by remember { mutableStateOf("This is a note.\nIt can span multiple lines.") }
-    Column(modifier = Modifier.padding(16.dp)) {
-        MultiLineTextInputField(
-            label = "Notes",
-            onValueChange = {  it },
-            value = notes
-        )
-        Text(
-            text = "Notes: $notes",
-            modifier = Modifier.padding(top = 8.dp),
-            style = MaterialTheme.typography.bodySmall
-        )
+    AichoPaichoTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            MultiLineTextInputField(
+                label = "Notes",
+                value = notes,
+                onValueChange = { notes = it }
+            )
+            Text(
+                text = "Notes: $notes",
+                modifier = Modifier.padding(top = 8.dp),
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
     }
 }
+

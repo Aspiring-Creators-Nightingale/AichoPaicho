@@ -51,7 +51,8 @@ class TransactionDetailViewModel @Inject constructor(
         }
     }
 
-    fun updateAmount(amount: Int) {
+    fun updateAmount(amountString: String) {
+        val amount = amountString.toIntOrNull() ?: 0
         _uiState.value.record?.let { record ->
             _uiState.value = _uiState.value.copy(
                 record = record.copy(amount = amount, updatedAt = System.currentTimeMillis())
@@ -62,7 +63,10 @@ class TransactionDetailViewModel @Inject constructor(
     fun updateDescription(description: String) {
         _uiState.value.record?.let { record ->
             _uiState.value = _uiState.value.copy(
-                record = record.copy(description = description, updatedAt = System.currentTimeMillis())
+                record = record.copy(
+                    description = description,
+                    updatedAt = System.currentTimeMillis()
+                )
             )
         }
     }
@@ -110,10 +114,21 @@ class TransactionDetailViewModel @Inject constructor(
             viewModelScope.launch {
                 try {
                     recordRepository.deleteRecord(record.id)
+                    _uiState.value = _uiState.value.copy(isRecordDeleted = true)
                 } catch (e: Exception) {
                     _uiState.value = _uiState.value.copy(errorMessage = e.message)
                 }
             }
         }
+    }
+    fun acknowledgeRecordDeleted()
+    {
+        _uiState.value = _uiState.value.copy(isRecordDeleted = false)
+    }
+
+    fun clearErrorMessage()
+    {
+        _uiState.value = _uiState.value.copy(errorMessage = null)
+
     }
 }

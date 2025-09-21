@@ -26,6 +26,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -44,7 +45,8 @@ class SettingsViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
     private val firebaseAuth: FirebaseAuth,
     private val syncRepository: SyncRepository,
-    private val preferencesRepository: PreferencesRepository
+    private val preferencesRepository: PreferencesRepository,
+    @ApplicationContext private val context: Context
 
 ) : ViewModel() {
 
@@ -236,7 +238,6 @@ class SettingsViewModel @Inject constructor(
 
                 _uiState.value = _uiState.value.copy(user = updatedUser)
 
-                // Start initial sync
                 startSync()
             }
         } catch (e: Exception) {
@@ -287,62 +288,17 @@ class SettingsViewModel @Inject constructor(
         if (!_uiState.value.isBackupEnabled || _uiState.value.user?.isOffline == true) {
             return
         }
-
-        viewModelScope.launch {
-            try {
-                _uiState.value = _uiState.value.copy(
-                    isSyncing = true,
-                    syncProgress = 0f,
-                    syncMessage = "Starting backup..."
-                )
-
-                // Step 1: Sync contacts
-                _uiState.value = _uiState.value.copy(
-                    syncProgress = 0.25f,
-                    syncMessage = "Backing up contacts..."
-                )
-                syncRepository.syncContacts()
-
-                // Step 2: Sync records
-                _uiState.value = _uiState.value.copy(
-                    syncProgress = 0.5f,
-                    syncMessage = "Backing up transactions..."
-                )
-                syncRepository.syncRecords()
-
-                // Step 3: Sync user data
-                _uiState.value = _uiState.value.copy(
-                    syncProgress = 0.75f,
-                    syncMessage = "Backing up user data..."
-                )
-                syncRepository.syncUserData()
-
-                // Step 4: Complete
-                _uiState.value = _uiState.value.copy(
-                    syncProgress = 1f,
-                    syncMessage = "Backup completed successfully"
-                )
-
-                // Update last sync time
-                saveLastSyncTime(System.currentTimeMillis())
-
-            } catch (e: Exception) {
-                setErrorMessage("Backup failed: ${e.message}")
-            } finally {
-                _uiState.value = _uiState.value.copy(
-                    isSyncing = false,
-                    syncProgress = 0f,
-                    syncMessage = ""
-                )
-            }
-        }
+        _uiState.value = _uiState.value.copy(isSyncing = true)
+        BackgroundSyncWorker.scheduleOneTimeSyncOnLogin(context)
+        _uiState.value = _uiState.value.copy(
+            isSyncing = false,
+            syncProgress = 0f,
+            syncMessage = ""
+        )
     }
-
-
-
     private fun getAppVersion(): String {
         // You'll implement this to get actual app version
-        return "1.0.0"
+        return context.getString(R.string.Version_number)
     }
 
     private suspend fun getLastSyncTime(): Long? {
@@ -350,7 +306,6 @@ class SettingsViewModel @Inject constructor(
     }
 
     private suspend fun saveLastSyncTime(timestamp: Long) {
-        // Implement saving last sync time to preferences
         preferencesRepository.setLastSyncTime(timestamp)
     }
 

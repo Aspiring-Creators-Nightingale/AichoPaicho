@@ -9,5 +9,6 @@ data class ContactListUiState(
     val searchQuery: String = "",
     val selectedLetter: String = "",
     val isLoading: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val availableLetters: List<String> = emptyList()
 )

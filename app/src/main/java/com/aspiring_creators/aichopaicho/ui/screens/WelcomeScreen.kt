@@ -2,20 +2,21 @@ package com.aspiring_creators.aichopaicho.ui.screens
 
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement // Added
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize // Added
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+// import androidx.compose.material3.Text // No longer directly used here, TextComponent is used
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -24,10 +25,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+// import androidx.compose.ui.graphics.Color // No longer needed for hardcoded colors
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
+// import androidx.compose.ui.res.colorResource // No longer needed
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,10 +39,10 @@ import com.aspiring_creators.aichopaicho.R
 import com.aspiring_creators.aichopaicho.ui.component.ButtonComponent
 import com.aspiring_creators.aichopaicho.ui.component.LogoTopBar
 import com.aspiring_creators.aichopaicho.ui.component.TextComponent
+import com.aspiring_creators.aichopaicho.ui.theme.AichoPaichoTheme // Added for Preview
 import com.aspiring_creators.aichopaicho.viewmodel.WelcomeViewModel
 import kotlinx.coroutines.launch
-import kotlin.math.log
-
+// import kotlin.math.log // Unused import
 
 @Composable
 fun WelcomeScreen(
@@ -64,12 +65,14 @@ fun WelcomeScreen(
 
     Surface(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .verticalScroll(scrollState),
-        color = colorResource(R.color.appThemeColor)
+        color = MaterialTheme.colorScheme.background
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             Spacer(modifier = Modifier.size(33.dp))
 
@@ -79,10 +82,10 @@ fun WelcomeScreen(
 
             Image(
                 painter = painterResource(id = R.drawable.welcome_screen_1),
-                contentDescription = "welcome screen",
+                contentDescription = "welcome screen illustration",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .padding(horizontal = 22.dp)
+                    .size(400.dp)
                     .clip(CircleShape)
             )
 
@@ -90,27 +93,26 @@ fun WelcomeScreen(
 
             TextComponent(
                 value = "Never forget a loan or a debt",
-                textSize = 33.sp,
-                lineHeight = 33.sp
+                textSize = 28.sp,
+                lineHeight = 36.sp,
+                textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.size(33.dp))
+            Spacer(modifier = Modifier.size(24.dp))
 
             // Show error message if any
-            uiState.errorMessage.let { error ->
-                if (error != null) {
-                    TextComponent(
-                        value = error,
-                       textColor = R.color.error,
-                    )
-                }
-
+            uiState.errorMessage?.let { error ->
+                TextComponent(
+                    value = error,
+                    color = MaterialTheme.colorScheme.error,
+                    textSize = 14.sp
+                )
                 Spacer(modifier = Modifier.size(16.dp))
             }
 
             // Google Sign In Button
             ButtonComponent(
-                logo =  R.drawable.logo_google,
+                logo = R.drawable.logo_google,
                 text = "Sign in with Google",
                 onClick = {
                     scope.launch {
@@ -118,17 +120,18 @@ fun WelcomeScreen(
                         if (result.isSuccess) {
                             onNavigateToPermissions()
                         }
-                        // Error is automatically shown via uiState
                     }
                 },
                 enabled = !uiState.isLoading,
-                modifier = Modifier
+                modifier = Modifier.fillMaxWidth(0.8f)
             )
+
+            Spacer(modifier = Modifier.size(16.dp))
 
             // Skip Button
             ButtonComponent(
                 logo = R.drawable.logo_skip,
-               text = "Skip for Now",
+                text = "Skip for Now",
                 onClick = {
                     scope.launch {
                         val result = welcomeViewModel.skipSignIn()
@@ -138,27 +141,30 @@ fun WelcomeScreen(
                     }
                 },
                 enabled = !uiState.isLoading,
-                modifier = Modifier.padding(horizontal = 75.dp).width(250.dp)
+                modifier = Modifier.fillMaxWidth(0.8f)
             )
 
             // Loading indicator
             if (uiState.isLoading) {
+                Spacer(modifier = Modifier.size(24.dp))
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             }
+            Spacer(modifier = Modifier.weight(1f))
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun WelcomeScreenPreview()
-{
-//    WelcomeScreen(hiltViewModel())
+fun WelcomeScreenPreview() {
+    AichoPaichoTheme { // Wrap preview in your theme
+        WelcomeScreen(onNavigateToPermissions = {})
+    }
 }

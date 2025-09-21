@@ -9,5 +9,6 @@ data class RecordDetailUiState(
     val errorMessage: String? = null,
     val record: Record? = null,
     val contact: Contact? = null,
-    val type: Type? = null
+    val type: Type? = null,
+    val isRecordDeleted: Boolean = false
 )

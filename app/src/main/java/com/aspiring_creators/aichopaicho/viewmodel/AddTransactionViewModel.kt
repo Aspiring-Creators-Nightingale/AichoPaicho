@@ -149,4 +149,16 @@ class AddTransactionViewModel @Inject constructor(
             }
         }
     }
+
+    fun clearErrorMessage()
+    {
+        _uiState.update { it.copy(errorMessage = null) }
+    }
+
+    fun clearSubmissionSuccessFlag()
+    {
+        _uiState.update { it.copy(submissionSuccessful = false) }
+    }
+
+
 }

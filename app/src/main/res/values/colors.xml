@@ -11,4 +11,6 @@
     <color name="buttonColor">#ECD4D4</color>
     <color name="error">#FFB00020</color>
     <color name="textColor">#534A6A</color>
+    <color name="lightStatusBarColor">#FFE4F1E2</color>
+    <color name="darkStatusBarColor">#FF323233</color>
 </resources>

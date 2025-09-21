@@ -1,5 +1,6 @@
 package com.aspiring_creators.aichopaicho.ui.screens
 
+// import androidx.compose.foundation.background // To be removed
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+// import androidx.compose.foundation.lazy.rememberLazyListState // For AlphabetSlider scroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -23,7 +25,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Card
+import androidx.compose.material3.Card // Keep for AlphabetSlider if needed, or replace
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,27 +33,34 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold // Added
+import androidx.compose.material3.SnackbarHostState // Added
+import androidx.compose.material3.Surface // Added
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+// import androidx.compose.material3.TextFieldDefaults // For OutlinedTextField theming if needed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember // Added
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
+// import androidx.compose.ui.graphics.Color // To be removed
+// import androidx.compose.ui.res.colorResource // To be removed
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.aspiring_creators.aichopaicho.R
+// import androidx.compose.ui.unit.sp // Replaced by MaterialTheme.typography
+// import com.aspiring_creators.aichopaicho.R // To be removed
 import com.aspiring_creators.aichopaicho.data.entity.Contact
+import com.aspiring_creators.aichopaicho.ui.component.SnackbarComponent // Added
 import com.aspiring_creators.aichopaicho.ui.component.TypeConstants
+import com.aspiring_creators.aichopaicho.ui.theme.AichoPaichoTheme // Added
 import com.aspiring_creators.aichopaicho.viewmodel.ContactListViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,148 +72,144 @@ fun ContactListScreen(
     contactListViewModel: ContactListViewModel = hiltViewModel()
 ) {
     val uiState by contactListViewModel.uiState.collectAsState()
-    val filteredContacts = contactListViewModel.getFilteredContacts(type)
-    val availableLetters = contactListViewModel.getAvailableLetters(type)
 
-    LaunchedEffect(Unit) {
-        // Load contacts when screen opens
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(type) {
+        contactListViewModel.getFilteredContacts(type)
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colorResource(R.color.appThemeColor))
-    ) {
-        // Top Bar
-        TopAppBar(
-            title = {
-                Text(
-                    text = when(type.lowercase()) {
-                        TypeConstants.TYPE_LENT -> "Contacts You Lent To"
-                        TypeConstants.TYPE_BORROWED -> "Contacts You Borrowed From"
-                        else -> "All Contacts"
-                    }
-                )
-            },
-            navigationIcon = {
-                onNavigateBack?.let { navigateBack ->
-                    IconButton(
-                        onClick = navigateBack,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                    ) {
-                        Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.Transparent
-            )
-        )
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let { error ->
+            snackbarHostState.showSnackbar(error)
+            contactListViewModel.clearErrorMessage()
+        }
+    }
 
-        // Search Bar
-        Card(
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = when (type.lowercase()) {
+                            TypeConstants.TYPE_LENT.lowercase() -> "Contacts You Lent To"
+                            TypeConstants.TYPE_BORROWED.lowercase() -> "Contacts You Borrowed From"
+                            else -> "All Contacts"
+                        },
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                },
+                navigationIcon = {
+                    onNavigateBack?.let { navigateBack ->
+                        IconButton(onClick = navigateBack) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
+            )
+        },
+        snackbarHost = { SnackbarComponent(snackbarHostState = snackbarHostState) }
+    ) { paddingValues ->
+        Surface(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            shape = RoundedCornerShape(12.dp)
+                .fillMaxSize()
+                .padding(paddingValues),
+            color = MaterialTheme.colorScheme.background
         ) {
-            Row(
-                modifier = Modifier.padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Column(modifier = Modifier.fillMaxSize()) {
                 OutlinedTextField(
                     value = uiState.searchQuery,
                     onValueChange = contactListViewModel::searchContacts,
                     label = { Text("Search contacts") },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     leadingIcon = {
                         Icon(Icons.Default.Search, contentDescription = "Search")
                     },
                     trailingIcon = {
                         if (uiState.searchQuery.isNotEmpty()) {
                             IconButton(onClick = contactListViewModel::clearSearch) {
-                                Icon(Icons.Default.Clear, contentDescription = "Clear")
+                                Icon(Icons.Default.Clear, contentDescription = "Clear search")
                             }
                         }
                     },
                     singleLine = true
+                    // Colors will adapt from MaterialTheme
                 )
-            }
-        }
 
-        // Main Content
-        Box(modifier = Modifier.fillMaxSize()) {
-            // Loading State
-            if (uiState.isLoading) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
-            // Content
-            else if (filteredContacts.isNotEmpty()) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(filteredContacts) { contact ->
-                        ContactListItem(
-                            contact = contact,
-                            onClick = { onContactClicked(contact.id) }
+                Box(modifier = Modifier.weight(1f)) { // Make LazyColumn take remaining space
+                    if (uiState.isLoading) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                        }
+                    } else if (uiState.contacts.isEmpty()) { // Check the main contacts list from UiState
+                        Box(
+                            modifier = Modifier.fillMaxSize().padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(64.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                )
+                                Text(
+                                    text = if (uiState.searchQuery.isNotBlank())
+                                        "No contacts found for \"${uiState.searchQuery}\""
+                                    else "No contacts available for this category.",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                            // val listState = rememberLazyListState() // If scroll needed for AlphabetSlider
+                        ) {
+                            items(uiState.contacts, key = { it.id }) { contact ->
+                                ContactListItem(
+                                    contact = contact,
+                                    onClick = { onContactClicked(contact.id) }
+                                )
+                            }
+                        }
+                    }
+
+                    // A-Z Slider (conditionally displayed)
+                    if (uiState.availableLetters.isNotEmpty() && uiState.searchQuery.isBlank() && !uiState.isLoading && uiState.contacts.isNotEmpty()) {
+                        AlphabetSlider(
+                            letters = uiState.availableLetters,
+                            selectedLetter = uiState.selectedLetter,
+                            onLetterSelected = { letter ->
+                                contactListViewModel.jumpToLetter(letter)
+                            },
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .padding(end = 4.dp, top = 8.dp, bottom = 8.dp) // Adjusted padding
                         )
                     }
                 }
-            }
-            // Empty State
-            else {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = null,
-                            modifier = Modifier.size(64.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                        )
-                        Text(
-                            text = if (uiState.searchQuery.isNotBlank())
-                                "No contacts found for \"${uiState.searchQuery}\""
-                            else "No contacts available",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-            }
-
-            // A-Z Slider (only show if there are contacts and no search)
-            if (availableLetters.isNotEmpty() && uiState.searchQuery.isBlank()) {
-                AlphabetSlider(
-                    letters = availableLetters,
-                    selectedLetter = uiState.selectedLetter,
-                    onLetterSelected = contactListViewModel::jumpToLetter,
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .padding(end = 8.dp)
-                )
-            }
-        }
-
-        // Error handling
-        uiState.errorMessage?.let { error ->
-            LaunchedEffect(error) {
-                // Handle error display
             }
         }
     }
@@ -220,52 +225,48 @@ fun ContactListItem(
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp), // Subtle elevation
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        )
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(12.dp), // Slightly reduced padding
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Contact Avatar
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(40.dp) // Adjusted size
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary),
+                    .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = contact.name.firstOrNull()?.uppercase()?.toString() ?: "?",
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                    text = contact.name.firstOrNull()?.uppercaseChar()?.toString() ?: "?",
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    style = MaterialTheme.typography.titleMedium
                 )
             }
-
             Spacer(modifier = Modifier.width(16.dp))
-
-            // Contact Details
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = contact.name,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold
                 )
-
-                if (contact.phone.isNotEmpty()) {
+                contact.phone.firstOrNull()?.takeIf { it.isNotBlank() }?.let { phoneNumber ->
                     Text(
-                        text = contact.phone.firstOrNull() ?: "",
-                        fontSize = 14.sp,
+                        text = phoneNumber,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
-
-            // Arrow indicator
             Icon(
                 imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                contentDescription = "View contact",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                contentDescription = "View contact details",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
         }
     }
@@ -274,47 +275,62 @@ fun ContactListItem(
 @Composable
 fun AlphabetSlider(
     letters: List<String>,
-    selectedLetter: String,
+    selectedLetter: String?, // Can be null if no letter is selected
     onLetterSelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
+    Surface( // Using Surface instead of Card for a flatter, more integrated look
         modifier = modifier.width(32.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
-        )
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f), // Themed background
+        tonalElevation = 2.dp // Slight elevation
     ) {
         LazyColumn(
-            modifier = Modifier.padding(vertical = 4.dp),
+            modifier = Modifier.padding(vertical = 8.dp), // Padding around the column
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(1.dp)
+            verticalArrangement = Arrangement.spacedBy(2.dp) // Spacing between letters
         ) {
             items(letters) { letter ->
                 Text(
                     text = letter,
-                    fontSize = 10.sp,
+                    style = MaterialTheme.typography.labelSmall,
                     fontWeight = if (selectedLetter == letter) FontWeight.Bold else FontWeight.Normal,
                     color = if (selectedLetter == letter)
                         MaterialTheme.colorScheme.primary
                     else
-                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier
-                        .clickable {
-                            onLetterSelected(if (selectedLetter == letter) "" else letter)
-                        }
-                        .padding(vertical = 2.dp, horizontal = 4.dp)
+                        .fillMaxWidth()
+                        .clickable { onLetterSelected(letter) }
+                        .padding(vertical = 4.dp, horizontal = 6.dp) // Padding for each letter
                 )
             }
         }
     }
 }
 
-@Preview(showBackground = true)
+
+
+
+@Preview
 @Composable
-fun ContactListScreenPreview() {
-    ContactListScreen(
-        type = "all",
-        onContactClicked = { }
-    )
+fun AlphabetSliderPreview() {
+    AichoPaichoTheme {
+        AlphabetSlider(
+            letters = ('A'..'Z').map { it.toString() },
+            selectedLetter = "C",
+            onLetterSelected = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun ContactListItemPreview() {
+    AichoPaichoTheme {
+        ContactListItem(
+            contact = Contact(id = "1", name = "Zoe Zebra", phone = listOf("000-9999"), contactId = "c4", userId="u1"),
+            onClick = {}
+        )
+    }
 }

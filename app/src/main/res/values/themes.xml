@@ -2,7 +2,5 @@
 <resources>
 
     <style name="Theme.AichoPaicho" parent="android:Theme.Material.Light.NoActionBar" >
-        <item name="android:statusBarColor">@color/purple_500</item>
-        <item name="android:windowLightStatusBar"> @color/purple_500 </item>
     </style>
 </resources>

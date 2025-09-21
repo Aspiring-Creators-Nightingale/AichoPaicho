@@ -1,26 +1,42 @@
 package com.aspiring_creators.aichopaicho.ui.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+// import androidx.compose.foundation.background // To be removed
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column // Will be used inside LazyColumn or for specific structures
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding // Will be used by Scaffold
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api // Already present
+import androidx.compose.material3.MaterialTheme // Added
+import androidx.compose.material3.Scaffold // Added
+import androidx.compose.material3.SnackbarHostState // Added
+import androidx.compose.material3.Surface // Added
+import androidx.compose.material3.Text // Added for empty state text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember // Added
+// import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.Center // More specific import
+// import androidx.compose.ui.graphics.Color // Not directly used for background
+// import androidx.compose.ui.res.colorResource // To be removed
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.tooling.preview.Preview // Added
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.aspiring_creators.aichopaicho.R
-import com.aspiring_creators.aichopaicho.data.entity.Contact
-import com.aspiring_creators.aichopaicho.ui.component.NetBalanceCard
+import com.aspiring_creators.aichopaicho.ui.component.SnackbarComponent // Added
 import com.aspiring_creators.aichopaicho.ui.component.TransactionCard
 import com.aspiring_creators.aichopaicho.ui.component.TransactionFilterSection
 import com.aspiring_creators.aichopaicho.ui.component.TransactionTopBar
 import com.aspiring_creators.aichopaicho.viewmodel.ViewTransactionViewModel
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,92 +44,119 @@ fun ViewTransactionScreen(
     viewTransactionViewModel: ViewTransactionViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
     onNavigateToIndividualRecord: (String) -> Unit,
-    onNavigateToContactList:(String)->Unit,
-    onNavigateToContact:()->Unit
+    onNavigateToContactList: (String) -> Unit,
+    onNavigateToContact: () -> Unit // Assuming this navigates to a general contacts view
 ) {
     val uiState by viewTransactionViewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
         viewTransactionViewModel.loadInitialData()
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colorResource(R.color.appThemeColor))
-    ) {
-        // Top Bar
-        TransactionTopBar(
-            onNavigateBack = onNavigateBack,
-            dateRange = uiState.dateRange,
-            onDateRangeSelected = { start, end ->
-                viewTransactionViewModel.updateDateRange(start, end)
-            },
-            onContactsNavigation ={
-                onNavigateToContact()
-            }
-        )
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let { error ->
+            snackbarHostState.showSnackbar(error)
+            viewTransactionViewModel.clearErrorMessage() // Acknowledge error
+        }
+    }
 
+    Scaffold(
+        topBar = {
+            TransactionTopBar(
+                onNavigateBack = onNavigateBack,
+                dateRange = uiState.dateRange,
+                onDateRangeSelected = { start, end ->
+                    viewTransactionViewModel.updateDateRange(start, end)
+                },
+                onContactsNavigation = onNavigateToContact
+            )
+        },
+        snackbarHost = { SnackbarComponent(snackbarHostState = snackbarHostState) }
+    ) { paddingValues ->
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            color = MaterialTheme.colorScheme.background // Themed background
+        ) {
+            if (uiState.isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Center
+                ) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary) // Themed
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp), // Adjusted padding
+                    verticalArrangement = Arrangement.spacedBy(12.dp) // Consistent spacing
+                ) {
+                    // Net Balance Section (kept commented as per original)
+                    /*
+                    item {
+                        uiState.recordSummary?.let { summary ->
+                            NetBalanceCard(
+                                summary = summary,
+                                onNavigateToContactList = { type -> onNavigateToContactList(type) },
+                                // Provide lentContacts and borrowedContacts if available from uiState
+                            )
+                        }
+                    }
+                    */
 
-        if (uiState.isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Net Balance Section
-/*                item {
-                    uiState.recordSummary?.let { summary ->
-                        NetBalanceCard(
-                            summary = summary,
-                            onNavigateToContactList = { },
+                    item {
+                        TransactionFilterSection(
+                            selectedType = uiState.selectedType,
+                            onTypeSelected = viewTransactionViewModel::updateSelectedType,
+                            fromQuery = uiState.fromQuery,
+                            onFromQueryChanged = viewTransactionViewModel::updateFromQuery,
+                            moneyToQuery = uiState.moneyToQuery,
+                            onMoneyToQueryChanged = viewTransactionViewModel::updateMoneyToQuery,
+                            onMoneyFilterApplyClicked = viewTransactionViewModel::updateMoneyFilterApplyClicked,
+                            showCompleted = uiState.showCompleted,
+                            onShowCompletedChanged = viewTransactionViewModel::updateShowCompleted
                         )
                     }
-                }*/
 
-
-                // Filter Section
-                item {
-                    TransactionFilterSection(
-                        selectedType = uiState.selectedType,
-                        onTypeSelected = viewTransactionViewModel::updateSelectedType,
-                        fromQuery = uiState.fromQuery,
-                        onFromQueryChanged = viewTransactionViewModel::updateFromQuery,
-                        moneyToQuery = uiState.moneyToQuery,
-                        onMoneyToQueryChanged = viewTransactionViewModel::updateMoneyToQuery,
-                        onMoneyFilterApplyClicked = viewTransactionViewModel::updateMoneyFilterApplyClicked ,
-                        showCompleted = uiState.showCompleted,
-                        onShowCompletedChanged = viewTransactionViewModel::updateShowCompleted
-                    )
+                    if (uiState.filteredRecords.isEmpty() && !uiState.isLoading) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 32.dp),
+                                contentAlignment = Center
+                            ) {
+                                Text(
+                                    text = "No transactions match your filters.",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    } else {
+                        items(uiState.filteredRecords, key = { it.id }) { record ->
+                            TransactionCard(
+                                record = record,
+                                contact = uiState.contacts[record.contactId],
+                                onRecordClick = { onNavigateToIndividualRecord(record.id) },
+                                onCompletionToggle = {
+                                    viewTransactionViewModel.toggleRecordCompletion(record.id)
+                                },
+                                onDeleteRecord = {
+                                    // Consider adding a confirmation dialog before deleting
+                                    // viewTransactionViewModel.deleteRecord(record.id)
+                                },
+                                onNavigateToContactList = { contactId ->
+                                    onNavigateToContactList(contactId) // Navigate to specific contact's transactions
+                                }
+                            )
+                        }
+                    }
                 }
-
-                // Transaction List
-                items(uiState.filteredRecords) { record ->
-                    TransactionCard(
-                        record = record,
-                        contact = uiState.contacts[record.contactId],
-                        onRecordClick = { onNavigateToIndividualRecord(record.id) },
-                        onCompletionToggle = {
-                            viewTransactionViewModel.toggleRecordCompletion(record.id)
-                        },
-                        onDeleteRecord = {},
-                        onNavigateToContactList = {onNavigateToContactList(it)}
-                    )
-                }
-            }
-        }
-
-        uiState.errorMessage?.let { error ->
-            LaunchedEffect(error) {
-                // Handle error display (you might want to use SnackbarHost here)
             }
         }
     }
 }
+
