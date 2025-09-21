@@ -1,11 +1,22 @@
 package com.aspiring_creators.aichopaicho.ui.component
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,17 +25,31 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card // Used by UserDashboardToast, NetBalanceCard
 import androidx.compose.material3.CardDefaults // Used by Card
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text // Standard Text, used alongside TextComponent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -37,10 +62,12 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.request.error
 import coil3.request.placeholder
+import com.aspiring_creators.aichopaicho.CurrencyUtils
 import com.aspiring_creators.aichopaicho.R
 import com.aspiring_creators.aichopaicho.data.entity.*
 import com.aspiring_creators.aichopaicho.data.entity.User
 import com.aspiring_creators.aichopaicho.ui.theme.AichoPaichoTheme
+import com.aspiring_creators.aichopaicho.viewmodel.ContactPreview
 import com.aspiring_creators.aichopaicho.viewmodel.data.DashboardScreenUiState
 
 @Composable
@@ -265,43 +292,256 @@ fun DashboardContent( // Uses QuickActionButton from AppComponent.kt
 
 
 
-// NetBalanceCard is specific to Dashboard, so its M3 themed version remains here.
-// LoadingContent and NotSignedInContent are assumed to be used from AppComponent.kt, so their definitions are removed from here.
 @Composable
 fun NetBalanceCard(
     summary: UserRecordSummary,
-    onNavigateToContactList: (String) -> Unit
+    onNavigateToContactList: (String) -> Unit,
+    lentContacts: List<ContactPreview> = emptyList(),
+    borrowedContacts: List<ContactPreview> = emptyList(),
+    onContactClick: (String) -> Unit = { id -> onNavigateToContactList(id) }
 ) {
+    var expanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 6.dp) // Keep padding from DashboardScreen in mind
+            .animateContentSize(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            ),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp), // Slightly less elevation than before
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-            contentColor = MaterialTheme.colorScheme.onSurface
+            containerColor = MaterialTheme.colorScheme.surfaceVariant, // Themed container
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant // Themed content
         )
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text("Overall Balance", style = MaterialTheme.typography.titleMedium) // Standard Text
-            Text( // Standard Text
-                text = "%.2f".format(summary.netTotal),
-                style = MaterialTheme.typography.displaySmall,
-                color = if (summary.netTotal >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-            )
+        Column {
             Row(
-                horizontalArrangement = Arrangement.SpaceAround,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { expanded = !expanded }
+                    .padding(5.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        "Net Balance",
+                        style = MaterialTheme.typography.titleMedium
+                        // Color from Card's contentColor
+                    )
+                    Text(
+                        "${CurrencyUtils.getCurrencyCode(context)} ${summary.netTotal.toInt()}",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = if (summary.netTotal >= 0) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.error
+                        }
+                    )
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    BalanceMiniItem("Lent", summary.totalLent, true)
+                    Spacer(modifier = Modifier.width(12.dp))
+                    BalanceMiniItem("Borrowed", summary.totalBorrowed, false)
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Icon(
+                        imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        contentDescription = if (expanded) "Collapse" else "Expand",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant // Keep as is, good contrast
+                    )
+                }
+            }
+
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessLow
+                    ),
+                    expandFrom = Alignment.Top
+                ) + fadeIn(animationSpec = tween(300)),
+                exit = shrinkVertically(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessLow
+                    ),
+                    shrinkTowards = Alignment.Top
+                ) + fadeOut(animationSpec = tween(200))
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, end = 8.dp, bottom = 10.dp, top = 2.dp)
+                ) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 12.dp),
+                        thickness = DividerDefaults.Thickness,
+                        color = MaterialTheme.colorScheme.outlineVariant // Themed divider
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        BalanceItemExtended(
+                            label = "Lent",
+                            amount = summary.totalLent,
+                            isPositive = true,
+                            icon = Icons.Default.KeyboardArrowUp,
+                            count = summary.lentContactsCount,
+                            contacts = lentContacts,
+                            onNavigateToContactList = { onNavigateToContactList(TypeConstants.TYPE_LENT) },
+                            onContactClick = onContactClick,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        Spacer(modifier = Modifier.width(16.dp))
+
+                        BalanceItemExtended(
+                            label = "Borrowed",
+                            amount = summary.totalBorrowed,
+                            isPositive = false,
+                            icon = Icons.Default.KeyboardArrowDown,
+                            count = summary.borrowedContactsCount,
+                            contacts = borrowedContacts,
+                            onNavigateToContactList = { onNavigateToContactList(TypeConstants.TYPE_BORROWED) },
+                            onContactClick = onContactClick,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BalanceMiniItem(label: String, amount: Double, isPositive: Boolean) {
+    val tint = if (isPositive) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.error
+    }
+    val context = LocalContext.current
+
+    Column(horizontalAlignment = Alignment.End) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = if (isPositive) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                contentDescription = null,
+                tint = tint,
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = "${CurrencyUtils.getCurrencyCode(context)} ${amount.toInt()}",
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontWeight = FontWeight.SemiBold
+                ),
+                color = tint
+            )
+        }
+    }
+}
+
+@Composable
+fun BalanceItemExtended(
+    label: String,
+    amount: Double,
+    isPositive: Boolean,
+    icon: ImageVector,
+    count: Int,
+    contacts: List<ContactPreview> = emptyList(),
+    onNavigateToContactList: () -> Unit,
+    onContactClick: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val amountColor = if (isPositive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+    val buttonContainerColor = if (isPositive) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer
+    val buttonContentColor = if (isPositive) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
+    val context = LocalContext.current
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = amountColor, // Match amount color
+                modifier = Modifier.size(6.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant // Good for secondary info
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "${CurrencyUtils.getCurrencyCode(context)} ${amount.toInt()}",
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = FontWeight.Bold
+            ),
+            color = amountColor
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        FilledTonalButton( // Using FilledTonalButton for less emphasis than FilledButton
+            onClick = onNavigateToContactList,
+            shape = RoundedCornerShape(20.dp),
+            modifier = Modifier
+                .height(50.dp)
+                .fillMaxWidth(),
+            colors = ButtonDefaults.filledTonalButtonColors(
+                containerColor = buttonContainerColor,
+                contentColor = buttonContentColor
+            )
+        ) {
+            Text(
+                text = if (isPositive) {
+                    "Lent to $count ${if (count == 1) "person" else "people"}"
+                } else {
+                    "Borrowed from $count ${if (count == 1) "person" else "people"}"
+                },
+                style = MaterialTheme.typography.labelMedium
+            )
+        }
+
+        if (contacts.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(12.dp))
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(horizontal = 4.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Total Lent", style = MaterialTheme.typography.labelMedium) // Standard Text
-                    Text("%.2f".format(summary.totalLent), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary) // Standard Text
-                }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Total Borrowed", style = MaterialTheme.typography.labelMedium) // Standard Text
-                    Text("%.2f".format(summary.totalBorrowed), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.error) // Standard Text
+                items(contacts.size) { idx ->
+                    val c = contacts[idx]
+                    ContactChip(
+                        contact = c,
+                        onClick = { onContactClick(c.id) },
+                        // Use tertiary for contact chips to differentiate from primary/error actions
+                        baseColor = MaterialTheme.colorScheme.tertiary,
+                        onBaseColor = MaterialTheme.colorScheme.onTertiary,
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        onContainerColor = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
                 }
             }
         }

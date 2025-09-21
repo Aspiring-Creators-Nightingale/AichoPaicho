@@ -60,22 +60,23 @@ val crimsonTextFamily = FontFamily(
 fun LogoTopBar(logo: Int, title: String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
     ){
         Spacer(modifier = Modifier.size(36.dp))
         Icon(
             painter = painterResource(id = logo),
-            contentDescription = "Logo", // Changed content description
-            tint = Color.Unspecified // Correct for multicolored logos
+            contentDescription = "Logo",
+            tint = Color.Unspecified,
+            modifier = Modifier.size(90.dp)
         )
         Spacer(modifier = Modifier.size(36.dp))
-        // Use standard Text with MaterialTheme typography for TopAppBar titles
         Text(
             text = title,
-            style = MaterialTheme.typography.headlineMedium, // Example, adjust as needed
-            fontFamily = crimsonTextFamily, // Apply custom font if desired for logo title
-            modifier = Modifier.padding(start = 8.dp) // Adjust padding as needed
-            // Color will be inherited or can be set explicitly
+            style = MaterialTheme.typography.headlineLarge,
+            fontFamily = crimsonTextFamily,
+            modifier = Modifier.padding(start = 8.dp)
+
         )
     }
 }
@@ -144,19 +145,17 @@ fun ButtonComponent(
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (logo != null && logo != 0) { // Check logo not 0 if it's a resource ID
+            if (logo != null && logo != 0) {
                 Icon(
                     painter = painterResource(id = logo),
                     contentDescription = text?.let { "$it logo"} ?: "Button logo",
-                    modifier = Modifier.size(24.dp) // M3 typical icon size in button
-                    // Tint will be MaterialTheme.colorScheme.onPrimary (inherited)
+                    modifier = Modifier.size(24.dp)
                 )
             } else if (vectorLogo != null) {
                 Icon(
                    imageVector = vectorLogo,
                     contentDescription = text?.let { "$it logo"} ?: "Button vector logo",
-                    modifier = Modifier.size(24.dp) // M3 typical icon size
-                    // Tint will be MaterialTheme.colorScheme.onPrimary (inherited)
+                    modifier = Modifier.size(24.dp)
                 )
             }
             if(logo != null || vectorLogo != null) Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
@@ -191,7 +190,7 @@ fun QuickActionButton( // This is a FAB
     modifier: Modifier = Modifier,
     text: String
 ) {
-        FloatingActionButton( // Using FAB for "quick actions"
+        FloatingActionButton(
             onClick = onClick,
             modifier = modifier,
             containerColor = MaterialTheme.colorScheme.primaryContainer,

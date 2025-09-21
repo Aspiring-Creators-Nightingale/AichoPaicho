@@ -153,7 +153,7 @@ fun DateInputField(
     onDateSelected: (Long?) -> Unit,
     modifier: Modifier = Modifier,
     initializeWithCurrentDate: Boolean = false,
-    selectedDate: Long? // This drives the component's state
+    selectedDate: Long?
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
@@ -173,9 +173,8 @@ fun DateInputField(
     LaunchedEffect(initializeWithCurrentDate, selectedDate) {
         if (initializeWithCurrentDate && selectedDate == null) {
             val now = System.currentTimeMillis()
-            onDateSelected(now) // Inform viewModel
+            onDateSelected(now)
         }
-        // If selectedDate is updated from ViewModel, update picker state
         if (selectedDate != datePickerState.selectedDateMillis) {
              datePickerState.selectedDateMillis = selectedDate
         }
@@ -185,14 +184,14 @@ fun DateInputField(
     Column(modifier = modifier) {
         OutlinedTextField(
             value = formattedDateText,
-            onValueChange = { /* Read-only */ },
+            onValueChange = { },
             label = { Text(label) },
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(onClick = { showDialog = true }),
             readOnly = true,
             trailingIcon = {
-                IconButton(onClick = { showDialog = true }) { // Also open dialog on icon click
+                IconButton(onClick = { showDialog = true }) {
                     Icon(
                         imageVector = Icons.Filled.DateRange,
                         contentDescription = "Select Date"
@@ -304,16 +303,14 @@ fun MultiLineTextInputField(
     maxLines: Int = 5,
     value: String
 ) {
-    // currentValue is now driven by the 'value' parameter
-    OutlinedTextField(
+     OutlinedTextField(
         value = value,
-        onValueChange = onValueChange, // Directly use onValueChange
+        onValueChange = onValueChange,
         label = { Text(label) },
         modifier = modifier
             .fillMaxWidth()
             .defaultMinSize(minHeight = (minLines * 24).dp),
         maxLines = maxLines
-        // Colors will be inherited from MaterialTheme
     )
 }
 
@@ -321,7 +318,7 @@ fun MultiLineTextInputField(
 @Composable
 fun MultiLineTextInputFieldPreview() {
     var notes by remember { mutableStateOf("This is a note.\nIt can span multiple lines.") }
-    AichoPaichoTheme { // Use AichoPaichoTheme
+    AichoPaichoTheme {
         Column(modifier = Modifier.padding(16.dp)) {
             MultiLineTextInputField(
                 label = "Notes",

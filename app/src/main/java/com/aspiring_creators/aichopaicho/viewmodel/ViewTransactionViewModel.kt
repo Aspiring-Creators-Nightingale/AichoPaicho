@@ -24,24 +24,6 @@ class ViewTransactionViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ViewTransactionViewModelUiState())
     val uiState: StateFlow<ViewTransactionViewModelUiState> = _uiState.asStateFlow()
 
-    // Initialize with current month date range
-    private val currentTime = System.currentTimeMillis()
-    private val calendar = Calendar.getInstance().apply { timeInMillis = currentTime }
-/*    private val startOfMonth = calendar.apply {
-        set(Calendar.DAY_OF_MONTH, 1)
-        set(Calendar.HOUR_OF_DAY, 0)
-        set(Calendar.MINUTE, 0)
-        set(Calendar.SECOND, 0)
-        set(Calendar.MILLISECOND, 0)
-    }.timeInMillis
-
-    private val endOfMonth = calendar.apply {
-        set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
-        set(Calendar.HOUR_OF_DAY, 23)
-        set(Calendar.MINUTE, 59)
-        set(Calendar.SECOND, 59)
-        set(Calendar.MILLISECOND, 999)
-    }.timeInMillis*/
 
     init {
         _uiState.value = _uiState.value.copy(
@@ -53,8 +35,6 @@ class ViewTransactionViewModel @Inject constructor(
         viewModelScope.launch {
             setLoading(true)
             try {
-                // Load all data concurrently
-                launch { loadRecordSummary() }
                 launch { loadContacts() }
                 launch { loadRecords() }
                 launch { loadTypes() }
@@ -66,15 +46,6 @@ class ViewTransactionViewModel @Inject constructor(
         }
     }
 
-    private suspend fun loadRecordSummary() {
-        val (startDate, endDate) = _uiState.value.dateRange
-        userRecordSummaryRepository.getCurrentUserSummaryByDate(startDate, endDate)
-            .catch { e -> setErrorMessage("Failed to load summary: ${e.message}") }
-            .collect { summary ->
-                _uiState.value = _uiState.value.copy(recordSummary = summary)
-            }
-    }
-
     private suspend fun loadRecords() {
         val (startDate, endDate) = _uiState.value.dateRange
         recordRepository.getRecordsByDateRange(startDate, endDate)
@@ -83,54 +54,10 @@ class ViewTransactionViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(
                     records = records,
                     filteredRecords = applyFilters(records),
-//                    lentContacts = contactPreviews.first,
-//                    borrowedContacts = contactPreviews.second
                 )
             }
     }
 
-  /*  private fun calculateContactPreviews(records: List<Record>):
-            Pair<List<ContactPreview>, List<ContactPreview>> {
-        val currentContacts = _uiState.value.contacts
-
-
-        // Group records by (contactId, typeId) and sum amounts
-        val contactSummary: Map<Pair<String?, Int?>, Double> = records
-            .filter { !it.isDeleted }
-            .groupBy { it.contactId to it.typeId }
-            .mapValues { (_, list) -> list.sumOf { it.amount.toDouble() } }
-
-        val lentContacts = mutableListOf<ContactPreview>()
-        val borrowedContacts = mutableListOf<ContactPreview>()
-
-        // Iterate properly with destructuring
-        contactSummary.forEach { (key, totalAmount) ->
-            val (contactId, typeId) = key
-
-            // skip null contact ids or non-positive totals
-            if (contactId == null || totalAmount <= 0) return@forEach
-
-            val contact = currentContacts[contactId] ?: return@forEach
-
-            val contactPreview = ContactPreview(
-                id = contactId,
-                name = contact.name,
-                amount = totalAmount
-            )
-
-            when (typeId) {
-                1 -> lentContacts.add(contactPreview)
-                2 -> borrowedContacts.add(contactPreview)
-                else -> {
-                    // unknown type - ignore or log if needed
-                }
-            }
-        }
-
-        return lentContacts.sortedByDescending { it.amount } to
-                borrowedContacts.sortedByDescending { it.amount }
-    }
-*/
 
     private suspend fun loadContacts() {
         contactRepository.getAllContacts()

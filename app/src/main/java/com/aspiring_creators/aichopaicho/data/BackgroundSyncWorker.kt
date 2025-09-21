@@ -72,10 +72,9 @@ class BackgroundSyncWorker @AssistedInject constructor(
                 .build()
 
             val syncWorkRequest = PeriodicWorkRequestBuilder<BackgroundSyncWorker>(
-                24, TimeUnit.HOURS, // Repeat every 24 hours
-                2, TimeUnit.HOURS   // Flex interval of 2 hours (WorkManager will run it once
-                // somewhere within this 2-hour window at the end of the 24-hour period)
-            )
+                24, TimeUnit.HOURS,
+                2, TimeUnit.HOURS
+                 )
                 .setConstraints(constraints)
                 .setBackoffCriteria(
                     BackoffPolicy.EXPONENTIAL,

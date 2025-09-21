@@ -5,4 +5,5 @@
     <string name="ask_contact_access">Give us access to your contacts to quickly add friends and family when you record a transaction. We never store or share your information.</string>
     <string name="allow_contact_access">Allow Contact Access</string>
     <string name="currency_nepal">NPR </string>
+    <string name="Version_number">1.0.0</string>
 </resources>

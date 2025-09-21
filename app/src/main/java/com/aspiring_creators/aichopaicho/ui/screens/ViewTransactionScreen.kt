@@ -32,14 +32,10 @@ import androidx.compose.ui.tooling.preview.Preview // Added
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-// import com.aspiring_creators.aichopaicho.R // To be removed
-// import com.aspiring_creators.aichopaicho.data.entity.Contact // Not directly used here
-import com.aspiring_creators.aichopaicho.ui.component.NetBalanceCard // Already imported
 import com.aspiring_creators.aichopaicho.ui.component.SnackbarComponent // Added
 import com.aspiring_creators.aichopaicho.ui.component.TransactionCard
 import com.aspiring_creators.aichopaicho.ui.component.TransactionFilterSection
 import com.aspiring_creators.aichopaicho.ui.component.TransactionTopBar
-import com.aspiring_creators.aichopaicho.ui.theme.AichoPaichoTheme // Added for preview
 import com.aspiring_creators.aichopaicho.viewmodel.ViewTransactionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)

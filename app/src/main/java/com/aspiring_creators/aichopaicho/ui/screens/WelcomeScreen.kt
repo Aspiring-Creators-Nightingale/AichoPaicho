@@ -65,15 +65,14 @@ fun WelcomeScreen(
 
     Surface(
         modifier = Modifier
-            .fillMaxSize() // Changed from fillMaxWidth to fillMaxSize
-            .verticalScroll(scrollState)
-            .padding(16.dp), // Added some overall padding
-        color = MaterialTheme.colorScheme.background // Changed to use theme background
+            .fillMaxSize()
+            .verticalScroll(scrollState),
+        color = MaterialTheme.colorScheme.background
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally, // Center content horizontally
-            verticalArrangement = Arrangement.Center // Center content vertically for smaller screens
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             Spacer(modifier = Modifier.size(33.dp))
 
@@ -83,10 +82,10 @@ fun WelcomeScreen(
 
             Image(
                 painter = painterResource(id = R.drawable.welcome_screen_1),
-                contentDescription = "welcome screen illustration", // More descriptive
-                contentScale = ContentScale.Crop, // Consider ContentScale.Fit if image is being cut off
+                contentDescription = "welcome screen illustration",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(200.dp) // Give a fixed size for better control
+                    .size(400.dp)
                     .clip(CircleShape)
             )
 
@@ -94,19 +93,19 @@ fun WelcomeScreen(
 
             TextComponent(
                 value = "Never forget a loan or a debt",
-                textSize = 28.sp, // Adjusted size slightly
-                lineHeight = 36.sp, // Adjusted for better readability
-                textAlign = TextAlign.Center // Explicitly set, though default in our updated TextComponent
+                textSize = 28.sp,
+                lineHeight = 36.sp,
+                textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.size(24.dp)) // Adjusted spacing
+            Spacer(modifier = Modifier.size(24.dp))
 
             // Show error message if any
-            uiState.errorMessage?.let { error -> // Simplified null check
+            uiState.errorMessage?.let { error ->
                 TextComponent(
                     value = error,
-                    color = MaterialTheme.colorScheme.error, // Use theme error color
-                    textSize = 14.sp // Smaller text for error
+                    color = MaterialTheme.colorScheme.error,
+                    textSize = 14.sp
                 )
                 Spacer(modifier = Modifier.size(16.dp))
             }
@@ -121,14 +120,13 @@ fun WelcomeScreen(
                         if (result.isSuccess) {
                             onNavigateToPermissions()
                         }
-                        // Error is automatically shown via uiState
                     }
                 },
                 enabled = !uiState.isLoading,
-                modifier = Modifier.fillMaxWidth(0.8f) // Use a fraction of width
+                modifier = Modifier.fillMaxWidth(0.8f)
             )
 
-            Spacer(modifier = Modifier.size(16.dp)) // Added spacer
+            Spacer(modifier = Modifier.size(16.dp))
 
             // Skip Button
             ButtonComponent(
@@ -143,22 +141,22 @@ fun WelcomeScreen(
                     }
                 },
                 enabled = !uiState.isLoading,
-                modifier = Modifier.fillMaxWidth(0.8f) // Use a fraction of width
+                modifier = Modifier.fillMaxWidth(0.8f)
             )
 
             // Loading indicator
             if (uiState.isLoading) {
-                Spacer(modifier = Modifier.size(24.dp)) // Add space before loader
+                Spacer(modifier = Modifier.size(24.dp))
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary) // Use theme primary color
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             }
-            Spacer(modifier = Modifier.weight(1f)) // Push content up if screen is tall
+            Spacer(modifier = Modifier.weight(1f))
         }
     }
 }

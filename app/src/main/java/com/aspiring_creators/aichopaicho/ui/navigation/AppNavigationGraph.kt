@@ -50,7 +50,6 @@ fun AppNavigationGraph(
                 WelcomeScreen(
                     onNavigateToPermissions = {
                         navController.navigate(Routes.PERMISSION_CONTACTS_SCREEN) {
-                            popUpTo(Routes.WELCOME_SCREEN) { inclusive = true }
                             launchSingleTop = true
                         }
                     }

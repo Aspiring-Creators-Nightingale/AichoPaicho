@@ -70,9 +70,7 @@ fun DashboardScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp) // This provides spacing
             ) {
-                // Removed redundant Spacer item
-
-                item {
+                  item {
                     uiState.recordSummary?.let { summary ->
                         NetBalanceCard(
                             summary = summary,
@@ -89,8 +87,7 @@ fun DashboardScreen(
                         !uiState.isSignedIn || uiState.user == null -> { // Simplified condition for not signed in
                             NotSignedInContent(onSignOut = onSignOut)
                         }
-                        // uiState.user != null is guaranteed by the above condition
-                        else -> { // User is signed in and user data is available
+                        else -> {
                             DashboardContent(
                                 uiState = uiState,
                                 onNavigateToAddTransaction = onNavigateToAddTransaction,
