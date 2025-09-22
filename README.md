@@ -27,6 +27,15 @@ AichoPaicho is an Android application designed to help users manage personal rec
     *   Built with Jetpack Compose for a declarative and modern user interface.
     *   Clean dashboard to display summaries and navigate through app features.
 
+## Screenshots
+
+![Screenshot 1](Pic/app-ui-1.jpeg)
+![Screenshot 2](Pic/app-ui-2.jpeg)
+![Screenshot 3](Pic/app-ui-3.jpeg)
+![Screenshot 4](Pic/app-ui-4.jpeg)
+![Screenshot 5](Pic/app-ui-5.jpeg)
+![Screenshot 6](Pic/app-ui-6.jpeg)
+
 ## Technology Stack
 
 *   **Programming Language**: Kotlin
