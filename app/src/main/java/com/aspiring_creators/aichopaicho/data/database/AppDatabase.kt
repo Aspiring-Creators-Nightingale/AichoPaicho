@@ -26,7 +26,7 @@ import com.aspiring_creators.aichopaicho.data.local.ScreenViewDao
         ScreenView::class
     ],
     views = [UserRecordSummary::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
