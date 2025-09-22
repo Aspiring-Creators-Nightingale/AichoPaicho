@@ -42,10 +42,6 @@ import com.aspiring_creators.aichopaicho.ui.component.SnackbarComponent // Added
 import com.aspiring_creators.aichopaicho.ui.component.TransactionDetailsCard
 import com.aspiring_creators.aichopaicho.ui.theme.AichoPaichoTheme // Added
 import com.aspiring_creators.aichopaicho.viewmodel.TransactionDetailViewModel
-import com.aspiring_creators.aichopaicho.data.entity.Record // For Preview
-import com.aspiring_creators.aichopaicho.data.entity.Type // For Preview
-import com.aspiring_creators.aichopaicho.data.entity.Contact // For Preview
-import com.aspiring_creators.aichopaicho.ui.component.TypeConstants // For Preview
 
 
 @OptIn(ExperimentalMaterial3Api::class)

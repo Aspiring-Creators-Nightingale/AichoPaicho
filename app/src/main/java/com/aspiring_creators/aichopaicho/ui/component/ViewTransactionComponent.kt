@@ -615,7 +615,7 @@ fun TransactionCard(
 
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = "${if (isLent) "+" else "-"} ${CurrencyUtils.getCurrencyCode(LocalContext.current)}.${record.amount}",
+                    text = "${if (isLent) "+" else "-"} ${CurrencyUtils.getCurrencyCode(LocalContext.current)} ${record.amount}",
                     fontWeight = FontWeight.Bold,
                     color = accent,
                     textDecoration = if (record.isComplete) TextDecoration.LineThrough else TextDecoration.None

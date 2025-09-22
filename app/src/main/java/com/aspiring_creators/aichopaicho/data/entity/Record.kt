@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.google.firebase.firestore.PropertyName
 
 @Entity(
     tableName = "records",
@@ -21,11 +22,26 @@ data class Record(
     val typeId: Int,
     val amount: Int,
     val date: Long,
+    @get:PropertyName("complete")
     val isComplete: Boolean = false,
+    @get:PropertyName("deleted")
     val isDeleted: Boolean = false,
     val description: String?,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 ){
-    constructor(): this("", null, null, 0, 0, 0, false, false, null, System.currentTimeMillis(), System.currentTimeMillis())
+    // Default constructor for Firestore/Room
+    constructor(): this(
+        id = "",
+        userId = null,
+        contactId = null,
+        typeId = 0,
+        amount = 0,
+        date = 0L,
+        isComplete = false,
+        isDeleted = false,
+        description = null,
+        createdAt = System.currentTimeMillis(),
+        updatedAt = System.currentTimeMillis()
+    )
 }

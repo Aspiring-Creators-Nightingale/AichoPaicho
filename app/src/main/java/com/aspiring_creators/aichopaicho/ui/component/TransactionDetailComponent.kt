@@ -30,19 +30,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-// import androidx.compose.ui.graphics.Color // Removed
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-// import androidx.compose.ui.unit.sp // Using MaterialTheme typography
 import com.aspiring_creators.aichopaicho.CurrencyUtils
 import com.aspiring_creators.aichopaicho.data.entity.Contact
 import com.aspiring_creators.aichopaicho.data.entity.Record
 import com.aspiring_creators.aichopaicho.data.entity.Type
 import com.aspiring_creators.aichopaicho.ui.theme.AichoPaichoTheme
-// import java.util.Currency // Not directly used
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -134,7 +130,7 @@ fun TransactionDetailsCard(
                 DetailRow(
                     label = "Amount",
                     // Assuming amount is stored in cents
-                    value = "${CurrencyUtils.getCurrencySymbol(context)} ${ "%.2f".format(record.amount / 100.0)}",
+                    value = "${CurrencyUtils.getCurrencySymbol(context)} ${record.amount}",
                     isEditing = false
                 )
             }

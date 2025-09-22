@@ -13,26 +13,22 @@ import androidx.compose.foundation.layout.padding // Will be used by Scaffold
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api // Already present
-import androidx.compose.material3.MaterialTheme // Added
-import androidx.compose.material3.Scaffold // Added
-import androidx.compose.material3.SnackbarHostState // Added
-import androidx.compose.material3.Surface // Added
-import androidx.compose.material3.Text // Added for empty state text
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember // Added
-// import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.Center // More specific import
-// import androidx.compose.ui.graphics.Color // Not directly used for background
-// import androidx.compose.ui.res.colorResource // To be removed
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview // Added
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.aspiring_creators.aichopaicho.ui.component.SnackbarComponent // Added
+import com.aspiring_creators.aichopaicho.ui.component.SnackbarComponent
 import com.aspiring_creators.aichopaicho.ui.component.TransactionCard
 import com.aspiring_creators.aichopaicho.ui.component.TransactionFilterSection
 import com.aspiring_creators.aichopaicho.ui.component.TransactionTopBar
@@ -45,7 +41,7 @@ fun ViewTransactionScreen(
     onNavigateBack: () -> Unit,
     onNavigateToIndividualRecord: (String) -> Unit,
     onNavigateToContactList: (String) -> Unit,
-    onNavigateToContact: () -> Unit // Assuming this navigates to a general contacts view
+    onNavigateToContact: () -> Unit
 ) {
     val uiState by viewTransactionViewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -120,7 +116,7 @@ fun ViewTransactionScreen(
                         )
                     }
 
-                    if (uiState.filteredRecords.isEmpty() && !uiState.isLoading) {
+                    if (uiState.filteredRecords.isEmpty()) {
                         item {
                             Box(
                                 modifier = Modifier
@@ -145,8 +141,6 @@ fun ViewTransactionScreen(
                                     viewTransactionViewModel.toggleRecordCompletion(record.id)
                                 },
                                 onDeleteRecord = {
-                                    // Consider adding a confirmation dialog before deleting
-                                    // viewTransactionViewModel.deleteRecord(record.id)
                                 },
                                 onNavigateToContactList = { contactId ->
                                     onNavigateToContactList(contactId) // Navigate to specific contact's transactions

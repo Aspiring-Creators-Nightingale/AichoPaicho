@@ -1,10 +1,10 @@
 package com.aspiring_creators.aichopaicho.data.entity
 
-import androidx.annotation.Nullable
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.google.firebase.firestore.PropertyName
 
 @Entity(
     tableName = "contacts",
@@ -19,14 +19,24 @@ import androidx.room.PrimaryKey
     indices = [Index(value = ["contactId"],  unique = true) , Index(value = ["userId"])]
 )
 data class Contact(
-    @PrimaryKey val id: String,  // UUID
+    @PrimaryKey val id: String,
     val name: String,
     val userId: String?,
     val phone: List<String?> ,
-    val contactId: String?, // system contact ID
+    val contactId: String?,
+    @get:PropertyName("deleted")
     val isDeleted: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 ){
-    constructor(): this("", "", null, emptyList(), null, false, System.currentTimeMillis(), System.currentTimeMillis())
+     constructor(): this(
+        id = "",
+        name = "",
+        userId = null,
+        phone = emptyList(),
+        contactId = null,
+        isDeleted = false,
+        createdAt = System.currentTimeMillis(),
+        updatedAt = System.currentTimeMillis()
+    )
 }

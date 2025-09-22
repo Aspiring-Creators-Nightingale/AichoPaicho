@@ -345,7 +345,7 @@ fun ContactRecordCard(
                 ) {
                     Text(
                         // Assuming amount is stored in cents
-                        text = "$amountPrefix ${CurrencyUtils.getCurrencySymbol(context)} ${ "%.2f".format(record.amount / 100.0)}",
+                        text = "$amountPrefix ${CurrencyUtils.getCurrencySymbol(context)} ${record.amount}",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), // Themed
                         color = amountColor,
                         textDecoration = if (record.isComplete) TextDecoration.LineThrough else TextDecoration.None
@@ -375,7 +375,7 @@ fun ContactRecordCard(
                         style = MaterialTheme.typography.bodySmall, // Themed
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textDecoration = if (record.isComplete) TextDecoration.LineThrough else TextDecoration.None,
-                        maxLines = 2 // Prevent long descriptions from breaking layout
+                        maxLines = 2
                     )
                 }
             }

@@ -28,6 +28,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -288,12 +289,20 @@ class SettingsViewModel @Inject constructor(
         if (!_uiState.value.isBackupEnabled || _uiState.value.user?.isOffline == true) {
             return
         }
-        _uiState.value = _uiState.value.copy(isSyncing = true)
+        _uiState.value = _uiState.value.copy(
+            isSyncing = true,
+            syncProgress = 0f,
+            syncMessage = "Starting backup..."
+        )
         BackgroundSyncWorker.scheduleOneTimeSyncOnLogin(context)
         _uiState.value = _uiState.value.copy(
-            isSyncing = false,
-            syncProgress = 0f,
-            syncMessage = ""
+            syncProgress = 0.25f,
+            syncMessage = "Backing up contacts..."
+        )
+
+        _uiState.value = _uiState.value.copy(
+            syncProgress = 1f,
+            syncMessage = "Backup completed successfully"
         )
     }
     private fun getAppVersion(): String {
