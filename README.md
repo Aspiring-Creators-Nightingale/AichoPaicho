@@ -29,12 +29,7 @@ AichoPaicho is an Android application designed to help users manage personal rec
 
 ## Screenshots
 
-![Screenshot 1](Pic/app-ui-1.jpeg)
-![Screenshot 2](Pic/app-ui-2.jpeg)
-![Screenshot 3](Pic/app-ui-3.jpeg)
-![Screenshot 4](Pic/app-ui-4.jpeg)
-![Screenshot 5](Pic/app-ui-5.jpeg)
-![Screenshot 6](Pic/app-ui-6.jpeg)
+Please click the link to see the [Screenshots](SCREENSHOTS.md) of app.
 
 ## Technology Stack
 
