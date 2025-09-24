@@ -185,16 +185,6 @@ fun PermissionScreen(
                     modifier = Modifier.fillMaxWidth(0.8f) // Consistent button width
                 )
 
-                onNavigateBack?.let { navigateBack ->
-                    Spacer(modifier = Modifier.size(16.dp))
-                    ButtonComponent(
-                       vectorLogo = Icons.AutoMirrored.Default.ArrowBack,
-                        text = "Back",
-                        onClick = navigateBack,
-                        enabled = !uiState.isLoading,
-                        modifier = Modifier.fillMaxWidth(0.8f) // Consistent button width
-                    )
-                }
 
                 if (uiState.isLoading) {
                     Spacer(modifier = Modifier.size(24.dp))
